@@ -1,0 +1,60 @@
+---
+description: VOUND design tokens — colors, typography, spacing, radii, shadows
+alwaysApply: true
+---
+
+# Design Tokens
+
+The design system source of truth lives in `docs/design-tokens/`:
+
+- `docs/design-tokens/global.json` — all token values
+- `docs/design-tokens/$metadata.json` — token set order
+- `docs/design-tokens/$themes.json` — theme configuration
+
+Always read these files before styling UI. Never hardcode colors, font sizes, radii, or spacing.
+
+## Colors
+
+Use semantic groups from `global.json`:
+
+- **Accent** — Primary `#1f4e79`, Secondary `#6283a1`, Tertiary `#8fa6bc`
+- **Text** — Primary, Secondary, Accent, Link Hover, Disabled, Inverted
+- **Button / Tag / Icon / Border / BG** — component and surface colors
+- **Status, Urgency, Feedback, Scoring** — state and semantic colors (background + Text variants)
+
+Map token paths to CSS/Tailwind names (e.g. `Accent.Primary` → `accent-primary`).
+
+## Typography
+
+**Font families:** IBM Plex Sans (headings), Source Sans 3 (body, UI, meta).
+
+**Font sizes (px):** 12, 14, 16, 18, 24, 28, 32.
+
+**Desktop styles** — use the named presets in `global.json`:
+
+| Category | Styles |
+|----------|--------|
+| Header | H1, H2, H3 |
+| Body | Eyebrow 1/2, Paragraph, Table |
+| UI | Button, Navigation, Tooltip, Status badge, Filter & input label |
+| Meta | Tender title, Small text, Caption |
+
+Each preset defines fontFamily, fontWeight, lineHeight, fontSize, letterSpacing, and textCase. Match these exactly.
+
+## Spacing
+
+Spacing tokens are not defined in JSON. Use a **4px base grid**: 4, 8, 12, 16, 20, 24, 32, 40, 48, etc. Never use arbitrary values (e.g. 13px, 22px).
+
+## Radii
+
+- **Containers:** `4px` (`Containers` token in `global.json`)
+
+## Shadows
+
+Shadow tokens are not defined in JSON. Prefer **thin borders** (`Border.Light` `#e5e8ec`, `Border.Dark` `#d9d9d9`) over box shadows. Avoid decorative or heavy elevation.
+
+## Rules
+
+- Never introduce colors, type, spacing, radii, or shadows outside this system.
+- When a value is missing from the token files, ask before inventing one.
+- Status/urgency UI must use the paired background + text color tokens.

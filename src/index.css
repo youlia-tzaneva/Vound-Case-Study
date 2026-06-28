@@ -1,0 +1,137 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors — from docs/design-tokens/global.json */
+  --color-accent-primary: #1f4e79;
+  --color-accent-secondary: #6283a1;
+  --color-accent-tertiary: #8fa6bc;
+
+  --color-text-primary: #000000;
+  --color-text-secondary: #434343;
+  --color-text-accent: #1f4e79;
+  --color-text-link-hover: #6283a1;
+  --color-text-disabled: #808284;
+  --color-text-inverted: #ffffff;
+
+  --color-border-light: #e5e8ec;
+  --color-border-dark: #d9d9d9;
+
+  --color-bg-base: #f3f5f6;
+  --color-bg-containers: #ffffff;
+  --color-bg-light: #f3f3f3;
+
+  --color-status-info-bg: #eaf3ff;
+  --color-status-info-text: #1557a1;
+  --color-status-progress-bg: #fff5d8;
+  --color-status-progress-text: #946200;
+  --color-status-submitted-bg: #e6f6f5;
+  --color-status-submitted-text: #0d5e5a;
+  --color-status-success-bg: #eaf7ee;
+  --color-status-success-text: #216e3a;
+
+  --color-urgency-overdue-bg: #feeceb;
+  --color-urgency-overdue-text: #b42318;
+  --color-urgency-deadline-bg: #fef4eb;
+  --color-urgency-deadline-text: #a84b00;
+
+  --color-scoring-high: #216e3a;
+  --color-scoring-low: #b42318;
+
+  --color-icon-default: #000000;
+  --color-icon-hover: #434343;
+  --color-icon-selected: #1f4e79;
+
+  /* Typography */
+  --font-heading: "IBM Plex Sans", sans-serif;
+  --font-body: "Source Sans 3", sans-serif;
+
+  --text-h2: 28px;
+  --text-body: 16px;
+  --text-table: 14px;
+  --text-caption: 12px;
+
+  /* Spacing — 4px grid */
+  --spacing-4xs: 4px;
+  --spacing-3xs: 8px;
+  --spacing-2xs: 12px;
+  --spacing-xs: 16px;
+  --spacing-s: 24px;
+  --spacing-m: 32px;
+  --spacing-l: 40px;
+
+  /* Radii */
+  --radius-container: 4px;
+  --radius-pill: 999px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-table);
+    line-height: 1.4;
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-base);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+
+  .text-h2 {
+    font-family: var(--font-heading);
+    font-size: var(--text-h2);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .text-body {
+    font-size: var(--text-body);
+    line-height: 1.4;
+  }
+
+  .text-table {
+    font-size: var(--text-table);
+    line-height: 1.4;
+  }
+
+  .text-filter-label {
+    font-size: var(--text-table);
+    font-weight: 300;
+    line-height: 1.3;
+  }
+
+  .text-tender-title {
+    font-size: var(--text-table);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .text-small {
+    font-size: var(--text-table);
+    line-height: 1.2;
+  }
+
+  .text-badge {
+    font-size: var(--text-table);
+    font-weight: 300;
+    line-height: 1.3;
+    letter-spacing: 0.42px;
+    text-transform: uppercase;
+  }
+}

@@ -99,3 +99,55 @@ export interface LeadershipTender {
   owner: TenderOwner;
   team: string;
 }
+
+export interface TenderPanelUpdate {
+  title: string;
+  timestamp: string;
+  description: string;
+  isNew?: boolean;
+}
+
+export interface TenderPanelTimelineEvent {
+  label: string;
+  value: string;
+}
+
+export interface TenderPanelRequirements {
+  mindestkriterien: number;
+  wertungTeilnahme: number;
+  zuschlagskriterien: number;
+  sections: { label: string; count: number }[];
+}
+
+export interface TenderPanelView {
+  id: string;
+  name: string;
+  location: string;
+  deadline: string;
+  urgency: UrgencyType;
+  urgencyLabel?: string;
+  status: TenderStatus;
+  owner: TenderOwner | null;
+  qualification: TenderQualification;
+  buyer: string;
+  volumen: string;
+  leistungsart: string;
+  lp: string;
+  gebaeudetyp: string;
+  verfahrensart: string;
+  entfernung: string;
+  uploadDate: string;
+  team: string;
+  partner: string;
+  updates: TenderPanelUpdate[];
+  comments: TenderComment[];
+  timelineDescription: string;
+  timelineEvents: TenderPanelTimelineEvent[];
+  requirements: TenderPanelRequirements;
+}
+
+export type TenderListItem =
+  | Tender
+  | UrgentTender
+  | TeamTender
+  | LeadershipTender;

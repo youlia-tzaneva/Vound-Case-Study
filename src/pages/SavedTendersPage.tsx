@@ -6,6 +6,7 @@ import { TendersTable } from "../components/saved-tenders/TendersTable";
 import { UrgentTendersTable } from "../components/saved-tenders/UrgentTendersTable";
 import { TeamTendersTable } from "../components/saved-tenders/TeamTendersTable";
 import { LeadershipTendersTable } from "../components/saved-tenders/LeadershipTendersTable";
+import { TenderSidePanelDrawer } from "../components/saved-tenders/TenderSidePanelDrawer";
 import {
   currentUser,
   mockTenders,
@@ -14,6 +15,8 @@ import {
   mockUrgentTenders,
   savedViews,
 } from "../data/mockTenders";
+import { toTenderPanelView } from "../data/tenderPanelDetails";
+import type { TenderListItem, TenderPanelView } from "../types/tender";
 
 function filterTendersByView(
   tenders: typeof mockTenders,
@@ -29,6 +32,8 @@ function filterTendersByView(
 export function SavedTendersPage() {
   const [views, setViews] = useState(savedViews);
   const [searchQuery, setSearchQuery] = useState("");
+  const [panelTender, setPanelTender] = useState<TenderPanelView | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   const activeViewId = views.find((view) => view.isActive)?.id ?? "all";
   const searchTerm = searchQuery.trim().toLowerCase();
@@ -53,9 +58,23 @@ export function SavedTendersPage() {
   );
 
   const handleViewSelect = (id: string) => {
+    setIsPanelOpen(false);
     setViews((current) =>
       current.map((view) => ({ ...view, isActive: view.id === id })),
     );
+  };
+
+  const handleTenderOpen = (tender: TenderListItem) => {
+    setPanelTender(toTenderPanelView(tender));
+    setIsPanelOpen(true);
+  };
+
+  const handlePanelClose = () => {
+    setIsPanelOpen(false);
+  };
+
+  const handlePanelClosed = () => {
+    setPanelTender(null);
   };
 
   return (
@@ -74,15 +93,38 @@ export function SavedTendersPage() {
         </div>
 
         {isUrgentView ? (
-          <UrgentTendersTable tenders={filteredUrgentTenders} />
+          <UrgentTendersTable
+            tenders={filteredUrgentTenders}
+            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+            onTenderOpen={handleTenderOpen}
+          />
         ) : isTeamView ? (
-          <TeamTendersTable tenders={filteredTeamTenders} />
+          <TeamTendersTable
+            tenders={filteredTeamTenders}
+            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+            onTenderOpen={handleTenderOpen}
+          />
         ) : isLeadershipView ? (
-          <LeadershipTendersTable tenders={filteredLeadershipTenders} />
+          <LeadershipTendersTable
+            tenders={filteredLeadershipTenders}
+            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+            onTenderOpen={handleTenderOpen}
+          />
         ) : (
-          <TendersTable tenders={filteredTenders} />
+          <TendersTable
+            tenders={filteredTenders}
+            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+            onTenderOpen={handleTenderOpen}
+          />
         )}
       </main>
+
+      <TenderSidePanelDrawer
+        tender={panelTender}
+        isOpen={isPanelOpen}
+        onClose={handlePanelClose}
+        onClosed={handlePanelClosed}
+      />
     </div>
   );
 }

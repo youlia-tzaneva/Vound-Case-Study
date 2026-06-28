@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Badge,
   statusToVariant,
@@ -9,18 +10,19 @@ import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { UrgentTender } from "../../types/tender";
 import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
-
-const thClass =
-  "border-b border-r border-border-light bg-bg-light p-xs text-left text-filter-label font-light text-text-primary";
-
-const tdClass =
-  "border-b border-r border-border-light bg-bg-containers p-xs align-top text-table";
+import { getTdClass, thClass } from "./tableStyles";
 
 interface UrgentTendersTableProps {
   tenders: UrgentTender[];
+  activeTenderId?: string | null;
+  onTenderOpen: (tender: UrgentTender) => void;
 }
 
-export function UrgentTendersTable({ tenders }: UrgentTendersTableProps) {
+export function UrgentTendersTable({
+  tenders,
+  activeTenderId = null,
+  onTenderOpen,
+}: UrgentTendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
       <table className="w-full min-w-[1100px] border-collapse">
@@ -54,7 +56,12 @@ export function UrgentTendersTable({ tenders }: UrgentTendersTableProps) {
         </thead>
         <tbody>
           {tenders.map((tender) => (
-            <UrgentTenderRow key={tender.id} tender={tender} />
+            <UrgentTenderRow
+              key={tender.id}
+              tender={tender}
+              isActive={activeTenderId === tender.id}
+              onOpen={() => onTenderOpen(tender)}
+            />
           ))}
         </tbody>
       </table>
@@ -62,13 +69,32 @@ export function UrgentTendersTable({ tenders }: UrgentTendersTableProps) {
   );
 }
 
-function UrgentTenderRow({ tender }: { tender: UrgentTender }) {
+function UrgentTenderRow({
+  tender,
+  isActive,
+  onOpen,
+}: {
+  tender: UrgentTender;
+  isActive: boolean;
+  onOpen: () => void;
+}) {
+  const [selected, setSelected] = useState(false);
+  const isHighlighted = selected || isActive;
+  const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
+
   return (
-    <tr className="group">
-      <td className={tdClass}>
-        <Checkbox label={`${tender.name} auswählen`} />
+    <tr className="group cursor-pointer" onClick={onOpen}>
+      <td
+        className={cellClass()}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <Checkbox
+          checked={selected}
+          onChange={setSelected}
+          label={`${tender.name} auswählen`}
+        />
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <div className="flex flex-col gap-4xs break-words">
           <span className="text-tender-title text-text-primary">
             {tender.name}
@@ -78,10 +104,10 @@ function UrgentTenderRow({ tender }: { tender: UrgentTender }) {
           </span>
         </div>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <UrgentReasonCell reason={tender.urgentReason} />
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <div className="flex flex-col gap-3xs">
           {tender.urgency && tender.urgencyLabel && (
             <Badge variant={urgencyToVariant(tender.urgency)}>
@@ -91,15 +117,15 @@ function UrgentTenderRow({ tender }: { tender: UrgentTender }) {
           <DeadlineText deadline={tender.deadline} />
         </div>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <Badge variant={statusToVariant(tender.status)}>
           {statusLabels[tender.status]}
         </Badge>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <UpdatesCell update={tender.update} />
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         {tender.owner ? (
           <div className="flex items-start gap-3xs">
             <Avatar
@@ -112,7 +138,7 @@ function UrgentTenderRow({ tender }: { tender: UrgentTender }) {
           </div>
         ) : null}
       </td>
-      <td className={`${tdClass} border-r-0`}>
+      <td className={cellClass("border-r-0")}>
         <QualificationCell qualification={tender.qualification} />
       </td>
     </tr>

@@ -1,21 +1,23 @@
+import { useState } from "react";
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { Tender } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
-
-const thClass =
-  "border-b border-r border-border-light bg-bg-light p-xs text-left text-filter-label font-light text-text-primary";
-
-const tdClass =
-  "border-b border-r border-border-light bg-bg-containers p-xs align-top text-table";
+import { getTdClass, thClass } from "./tableStyles";
 
 interface TendersTableProps {
   tenders: Tender[];
+  activeTenderId?: string | null;
+  onTenderOpen: (tender: Tender) => void;
 }
 
-export function TendersTable({ tenders }: TendersTableProps) {
+export function TendersTable({
+  tenders,
+  activeTenderId = null,
+  onTenderOpen,
+}: TendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
       <table className="w-full min-w-[1100px] border-collapse">
@@ -49,7 +51,12 @@ export function TendersTable({ tenders }: TendersTableProps) {
         </thead>
         <tbody>
           {tenders.map((tender) => (
-            <TenderRow key={tender.id} tender={tender} />
+            <TenderRow
+              key={tender.id}
+              tender={tender}
+              isActive={activeTenderId === tender.id}
+              onOpen={() => onTenderOpen(tender)}
+            />
           ))}
         </tbody>
       </table>
@@ -57,13 +64,32 @@ export function TendersTable({ tenders }: TendersTableProps) {
   );
 }
 
-function TenderRow({ tender }: { tender: Tender }) {
+function TenderRow({
+  tender,
+  isActive,
+  onOpen,
+}: {
+  tender: Tender;
+  isActive: boolean;
+  onOpen: () => void;
+}) {
+  const [selected, setSelected] = useState(false);
+  const isHighlighted = selected || isActive;
+  const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
+
   return (
-    <tr className="group">
-      <td className={tdClass}>
-        <Checkbox label={`${tender.name} auswählen`} />
+    <tr className="group cursor-pointer" onClick={onOpen}>
+      <td
+        className={cellClass()}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <Checkbox
+          checked={selected}
+          onChange={setSelected}
+          label={`${tender.name} auswählen`}
+        />
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <div className="flex flex-col gap-4xs break-words">
           <span className="text-tender-title text-text-primary">
             {tender.name}
@@ -73,7 +99,7 @@ function TenderRow({ tender }: { tender: Tender }) {
           </span>
         </div>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <div className="flex flex-col gap-3xs">
           {tender.urgency && tender.urgencyLabel && (
             <Badge variant={urgencyToVariant(tender.urgency)}>
@@ -83,12 +109,12 @@ function TenderRow({ tender }: { tender: Tender }) {
           <DeadlineText deadline={tender.deadline} />
         </div>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <Badge variant={statusToVariant(tender.status)}>
           {statusLabels[tender.status]}
         </Badge>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <div className="flex items-start gap-3xs">
           <Avatar
             initials={tender.owner.initials}
@@ -99,13 +125,13 @@ function TenderRow({ tender }: { tender: Tender }) {
           </span>
         </div>
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <QualificationCell qualification={tender.qualification} />
       </td>
-      <td className={tdClass}>
+      <td className={cellClass()}>
         <UpdatesCell update={tender.update} />
       </td>
-      <td className={`${tdClass} border-r-0`}>
+      <td className={cellClass("border-r-0")}>
         <CommentsCell comment={tender.comment} />
       </td>
     </tr>

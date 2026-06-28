@@ -19,6 +19,7 @@
   --color-bg-base: #f3f5f6;
   --color-bg-containers: #ffffff;
   --color-bg-light: #f3f3f3;
+  --color-bg-row-selected: #f9fafb;
 
   --color-status-info-bg: #eaf3ff;
   --color-status-info-text: #1557a1;
@@ -35,7 +36,11 @@
   --color-urgency-deadline-text: #a84b00;
 
   --color-scoring-high: #216e3a;
+  --color-scoring-medium: #946200;
   --color-scoring-low: #b42318;
+
+  --color-status-rejected-bg: #feeceb;
+  --color-status-rejected-text: #b42318;
 
   --color-icon-default: #000000;
   --color-icon-hover: #434343;
@@ -101,6 +106,20 @@
     line-height: 1.2;
   }
 
+  .text-h3 {
+    font-family: var(--font-heading);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .text-eyebrow {
+    font-size: 18px;
+    line-height: 1.4;
+    letter-spacing: 0.54px;
+    text-transform: uppercase;
+  }
+
   .text-body {
     font-size: var(--text-body);
     line-height: 1.4;
@@ -125,6 +144,11 @@
 
   .text-small {
     font-size: var(--text-table);
+    line-height: 1.2;
+  }
+
+  .text-caption {
+    font-size: var(--text-caption);
     line-height: 1.2;
   }
 

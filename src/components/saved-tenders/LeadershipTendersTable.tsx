@@ -1,21 +1,26 @@
 import { useState } from "react";
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
-import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
-import type { LeadershipTender } from "../../types/tender";
+import type { LeadershipTender, TenderOwner } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
+import { ProjectOwnerCell } from "./ProjectOwnerCell";
+import { TeamCell } from "./TeamCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface LeadershipTendersTableProps {
   tenders: LeadershipTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: LeadershipTender) => void;
+  onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onTeamChange: (tenderId: string, team: string) => void;
 }
 
 export function LeadershipTendersTable({
   tenders,
   activeTenderId = null,
   onTenderOpen,
+  onOwnerChange,
+  onTeamChange,
 }: LeadershipTendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -40,7 +45,7 @@ export function LeadershipTendersTable({
             <th scope="col" className={`${thClass} w-[173px]`}>
               Qualifikation
             </th>
-            <th scope="col" className={`${thClass} w-[138px]`}>
+            <th scope="col" className={`${thClass} w-[168px]`}>
               Projekt Owner
             </th>
             <th scope="col" className={`${thClass} w-[100px] border-r-0`}>
@@ -55,6 +60,8 @@ export function LeadershipTendersTable({
               tender={tender}
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
+              onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onTeamChange={(team) => onTeamChange(tender.id, team)}
             />
           ))}
         </tbody>
@@ -67,10 +74,14 @@ function LeadershipTenderRow({
   tender,
   isActive,
   onOpen,
+  onOwnerChange,
+  onTeamChange,
 }: {
   tender: LeadershipTender;
   isActive: boolean;
   onOpen: () => void;
+  onOwnerChange: (owner: TenderOwner) => void;
+  onTeamChange: (team: string) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -122,18 +133,13 @@ function LeadershipTenderRow({
         <QualificationCell qualification={tender.qualification} />
       </td>
       <td className={cellClass()}>
-        <div className="flex items-start gap-3xs">
-          <Avatar
-            initials={tender.owner.initials}
-            color={tender.owner.color}
-          />
-          <span className="text-table text-text-primary">
-            {tender.owner.name}
-          </span>
-        </div>
+        <ProjectOwnerCell
+          owner={tender.owner}
+          onOwnerChange={onOwnerChange}
+        />
       </td>
       <td className={cellClass("border-r-0")}>
-        <span className="text-table text-text-primary">{tender.team}</span>
+        <TeamCell team={tender.team} onTeamChange={onTeamChange} />
       </td>
     </tr>
   );

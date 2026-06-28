@@ -5,23 +5,25 @@ import {
   urgentReasonToVariant,
   urgencyToVariant,
 } from "../ui/Badge";
-import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
-import type { UrgentTender } from "../../types/tender";
+import type { UrgentTender, TenderOwner } from "../../types/tender";
 import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
+import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface UrgentTendersTableProps {
   tenders: UrgentTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: UrgentTender) => void;
+  onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
 }
 
 export function UrgentTendersTable({
   tenders,
   activeTenderId = null,
   onTenderOpen,
+  onOwnerChange,
 }: UrgentTendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -46,7 +48,7 @@ export function UrgentTendersTable({
             <th scope="col" className={`${thClass} w-[182px]`}>
               Aktualisierungen
             </th>
-            <th scope="col" className={`${thClass} w-[138px]`}>
+            <th scope="col" className={`${thClass} w-[168px]`}>
               Projekt Owner
             </th>
             <th scope="col" className={`${thClass} w-[173px] border-r-0`}>
@@ -61,6 +63,7 @@ export function UrgentTendersTable({
               tender={tender}
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
+              onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
             />
           ))}
         </tbody>
@@ -73,10 +76,12 @@ function UrgentTenderRow({
   tender,
   isActive,
   onOpen,
+  onOwnerChange,
 }: {
   tender: UrgentTender;
   isActive: boolean;
   onOpen: () => void;
+  onOwnerChange: (owner: TenderOwner) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -126,17 +131,10 @@ function UrgentTenderRow({
         <UpdatesCell update={tender.update} />
       </td>
       <td className={cellClass()}>
-        {tender.owner ? (
-          <div className="flex items-start gap-3xs">
-            <Avatar
-              initials={tender.owner.initials}
-              color={tender.owner.color}
-            />
-            <span className="text-table text-text-primary">
-              {tender.owner.name}
-            </span>
-          </div>
-        ) : null}
+        <ProjectOwnerCell
+          owner={tender.owner}
+          onOwnerChange={onOwnerChange}
+        />
       </td>
       <td className={cellClass("border-r-0")}>
         <QualificationCell qualification={tender.qualification} />

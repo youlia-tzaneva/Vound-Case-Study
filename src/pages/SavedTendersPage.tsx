@@ -18,6 +18,7 @@ import {
 import { toTenderPanelView } from "../data/tenderPanelDetails";
 import type {
   TenderListItem,
+  TenderOwner,
   TenderPanelView,
   TenderSidebarUpdates,
 } from "../types/tender";
@@ -103,6 +104,20 @@ export function SavedTendersPage() {
     [],
   );
 
+  const handleOwnerChange = useCallback(
+    (tenderId: string, owner: TenderOwner) => {
+      handleTenderUpdate(tenderId, { owner });
+    },
+    [handleTenderUpdate],
+  );
+
+  const handleTeamChange = useCallback(
+    (tenderId: string, team: string) => {
+      handleTenderUpdate(tenderId, { team });
+    },
+    [handleTenderUpdate],
+  );
+
   return (
     <div className="flex h-screen overflow-hidden bg-bg-base">
       <AppSidebar />
@@ -118,31 +133,39 @@ export function SavedTendersPage() {
           />
         </div>
 
-        {isUrgentView ? (
-          <UrgentTendersTable
-            tenders={filteredUrgentTenders}
-            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
-            onTenderOpen={handleTenderOpen}
-          />
-        ) : isTeamView ? (
-          <TeamTendersTable
-            tenders={filteredTeamTenders}
-            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
-            onTenderOpen={handleTenderOpen}
-          />
-        ) : isLeadershipView ? (
-          <LeadershipTendersTable
-            tenders={filteredLeadershipTenders}
-            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
-            onTenderOpen={handleTenderOpen}
-          />
-        ) : (
-          <TendersTable
-            tenders={filteredTenders}
-            activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
-            onTenderOpen={handleTenderOpen}
-          />
-        )}
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {isUrgentView ? (
+            <UrgentTendersTable
+              tenders={filteredUrgentTenders}
+              activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+              onTenderOpen={handleTenderOpen}
+              onOwnerChange={handleOwnerChange}
+            />
+          ) : isTeamView ? (
+            <TeamTendersTable
+              tenders={filteredTeamTenders}
+              activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+              onTenderOpen={handleTenderOpen}
+              onOwnerChange={handleOwnerChange}
+              onTeamChange={handleTeamChange}
+            />
+          ) : isLeadershipView ? (
+            <LeadershipTendersTable
+              tenders={filteredLeadershipTenders}
+              activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+              onTenderOpen={handleTenderOpen}
+              onOwnerChange={handleOwnerChange}
+              onTeamChange={handleTeamChange}
+            />
+          ) : (
+            <TendersTable
+              tenders={filteredTenders}
+              activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+              onTenderOpen={handleTenderOpen}
+              onOwnerChange={handleOwnerChange}
+            />
+          )}
+        </div>
       </main>
 
       <TenderSidePanelDrawer

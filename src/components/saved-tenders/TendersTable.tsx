@@ -3,20 +3,23 @@ import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
-import type { Tender } from "../../types/tender";
+import type { Tender, TenderOwner } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
+import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface TendersTableProps {
   tenders: Tender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
+  onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
 }
 
 export function TendersTable({
   tenders,
   activeTenderId = null,
   onTenderOpen,
+  onOwnerChange,
 }: TendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -35,7 +38,7 @@ export function TendersTable({
             <th scope="col" className={`${thClass} w-[176px]`}>
               Status
             </th>
-            <th scope="col" className={`${thClass} w-[138px]`}>
+            <th scope="col" className={`${thClass} w-[168px]`}>
               Projekt Owner
             </th>
             <th scope="col" className={`${thClass} w-[173px]`}>
@@ -56,6 +59,7 @@ export function TendersTable({
               tender={tender}
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
+              onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
             />
           ))}
         </tbody>
@@ -68,10 +72,12 @@ function TenderRow({
   tender,
   isActive,
   onOpen,
+  onOwnerChange,
 }: {
   tender: Tender;
   isActive: boolean;
   onOpen: () => void;
+  onOwnerChange: (owner: TenderOwner) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -115,15 +121,10 @@ function TenderRow({
         </Badge>
       </td>
       <td className={cellClass()}>
-        <div className="flex items-start gap-3xs">
-          <Avatar
-            initials={tender.owner.initials}
-            color={tender.owner.color}
-          />
-          <span className="text-table text-text-primary">
-            {tender.owner.name}
-          </span>
-        </div>
+        <ProjectOwnerCell
+          owner={tender.owner}
+          onOwnerChange={onOwnerChange}
+        />
       </td>
       <td className={cellClass()}>
         <QualificationCell qualification={tender.qualification} />

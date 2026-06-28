@@ -52,7 +52,6 @@ export function PanelDropdown({
         <div className="flex min-w-0 flex-1 items-center gap-4xs">{trigger}</div>
         <ChevronDown
           {...withIconClass(`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`)}
-          size={24}
         />
       </button>
 

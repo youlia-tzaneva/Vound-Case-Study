@@ -1,38 +1,43 @@
 import { useState } from "react";
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
-import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
-import type { TeamTender } from "../../types/tender";
+import type { TeamTender, TenderOwner } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
+import { ProjectOwnerCell } from "./ProjectOwnerCell";
+import { TeamCell } from "./TeamCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface TeamTendersTableProps {
   tenders: TeamTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: TeamTender) => void;
+  onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onTeamChange: (tenderId: string, team: string) => void;
 }
 
 export function TeamTendersTable({
   tenders,
   activeTenderId = null,
   onTenderOpen,
+  onOwnerChange,
+  onTeamChange,
 }: TeamTendersTableProps) {
   return (
-    <div className="w-full overflow-x-auto rounded-container border border-border-dark">
-      <table className="w-full min-w-[1100px] border-collapse">
+    <div className="w-full rounded-container border border-border-dark">
+      <table className="w-full table-fixed border-collapse">
         <thead>
           <tr>
             <th scope="col" className={`${thClass} w-[52px]`}>
               <span className="sr-only">Auswählen</span>
             </th>
-            <th scope="col" className={`${thClass} min-w-[198px]`}>
+            <th scope="col" className={`${thClass} w-[198px]`}>
               Name
             </th>
-            <th scope="col" className={`${thClass} w-[200px]`}>
+            <th scope="col" className={`${thClass} w-[135px]`}>
               Leistungsart
             </th>
-            <th scope="col" className={`${thClass} w-[160px]`}>
+            <th scope="col" className={`${thClass} w-[88px]`}>
               LP
             </th>
             <th scope="col" className={`${thClass} w-[176px]`}>
@@ -41,13 +46,13 @@ export function TeamTendersTable({
             <th scope="col" className={`${thClass} w-[136px]`}>
               Abgabefrist
             </th>
-            <th scope="col" className={`${thClass} w-[182px]`}>
+            <th scope="col" className={`${thClass} w-[calc(100%-1085px)]`}>
               Aktualisierungen
             </th>
-            <th scope="col" className={`${thClass} w-[138px]`}>
+            <th scope="col" className={`${thClass} w-[168px]`}>
               Projekt Owner
             </th>
-            <th scope="col" className={`${thClass} w-[100px] border-r-0`}>
+            <th scope="col" className={`${thClass} w-[132px] border-r-0`}>
               Team
             </th>
           </tr>
@@ -59,6 +64,8 @@ export function TeamTendersTable({
               tender={tender}
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
+              onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onTeamChange={(team) => onTeamChange(tender.id, team)}
             />
           ))}
         </tbody>
@@ -71,10 +78,14 @@ function TeamTenderRow({
   tender,
   isActive,
   onOpen,
+  onOwnerChange,
+  onTeamChange,
 }: {
   tender: TeamTender;
   isActive: boolean;
   onOpen: () => void;
+  onOwnerChange: (owner: TenderOwner) => void;
+  onTeamChange: (team: string) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -103,12 +114,12 @@ function TeamTenderRow({
         </div>
       </td>
       <td className={cellClass()}>
-        <span className="break-words text-table text-text-primary">
+        <span className="line-clamp-3 min-w-0 break-words text-table text-text-primary">
           {tender.leistungsart}
         </span>
       </td>
       <td className={cellClass()}>
-        <span className="break-words text-table text-text-primary">
+        <span className="line-clamp-2 min-w-0 break-words text-table text-text-primary">
           {tender.lp}
         </span>
       </td>
@@ -131,18 +142,13 @@ function TeamTenderRow({
         <UpdatesCell update={tender.update} />
       </td>
       <td className={cellClass()}>
-        <div className="flex items-start gap-3xs">
-          <Avatar
-            initials={tender.owner.initials}
-            color={tender.owner.color}
-          />
-          <span className="text-table text-text-primary">
-            {tender.owner.name}
-          </span>
-        </div>
+        <ProjectOwnerCell
+          owner={tender.owner}
+          onOwnerChange={onOwnerChange}
+        />
       </td>
       <td className={cellClass("border-r-0")}>
-        <span className="text-table text-text-primary">{tender.team}</span>
+        <TeamCell team={tender.team} onTeamChange={onTeamChange} />
       </td>
     </tr>
   );
@@ -166,18 +172,16 @@ function UpdatesCell({ update }: { update: TeamTender["update"] }) {
   }
 
   return (
-    <div className="flex flex-col gap-3xs">
-      <div className="flex items-start gap-3xs">
+    <div className="flex min-w-0 flex-col gap-3xs">
+      <div className="flex min-w-0 items-start gap-3xs">
         <UpdateDot isNew={update.isNew} />
         <span
-          className={`break-words text-table ${update.isNew ? "text-text-primary" : "text-text-secondary"}`}
+          className={`line-clamp-2 min-w-0 break-words text-table ${update.isNew ? "text-text-primary" : "text-text-secondary"}`}
         >
           {update.title}
         </span>
       </div>
-      <div className="pl-xs">
-        <TextLink>Alle anzeigen</TextLink>
-      </div>
+      <TextLink>Alle anzeigen</TextLink>
     </div>
   );
 }

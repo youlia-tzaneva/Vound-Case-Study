@@ -1,3 +1,5 @@
+import type { TableColumnId } from "../data/tableColumns";
+
 export type TenderStatus =
   | "vorgemerkt"
   | "in-bearbeitung"
@@ -56,6 +58,8 @@ export interface SavedView {
   id: string;
   label: string;
   isActive?: boolean;
+  isCustom?: boolean;
+  columns?: TableColumnId[];
 }
 
 export type UrgentReasonType =

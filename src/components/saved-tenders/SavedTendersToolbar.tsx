@@ -1,32 +1,29 @@
 import {
   Calendar,
   Columns3,
-  Filter,
   Search,
   SlidersHorizontal,
   Table2,
   type LucideIcon,
 } from "lucide-react";
+import type { TenderOwner } from "../../types/tender";
 import { withIconClass } from "../ui/iconProps";
+import { FilterDropdown } from "./FilterDropdown";
 
 interface SavedTendersToolbarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
+  onOwnerFilterSelect: (owner: TenderOwner) => void;
 }
 
 export function SavedTendersToolbar({
   searchQuery,
   onSearchChange,
+  onOwnerFilterSelect,
 }: SavedTendersToolbarProps) {
   return (
     <div className="flex w-full items-center gap-m rounded-container border border-border-light bg-bg-containers px-xs py-3xs">
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-3xs text-filter-label text-text-primary hover:text-text-accent"
-      >
-        <Filter {...withIconClass()} />
-        Filter
-      </button>
+      <FilterDropdown onOwnerFilterSelect={onOwnerFilterSelect} />
 
       <div className="flex min-w-0 flex-1 items-center gap-xs rounded-container border border-border-light px-xs py-3xs">
         <Search {...withIconClass()} size={20} />
@@ -49,13 +46,13 @@ export function SavedTendersToolbar({
       </button>
 
       <div
-        className="flex shrink-0 items-center gap-xs"
+        className="flex shrink-0 items-stretch gap-4xs self-stretch"
         role="group"
         aria-label="Ansicht wechseln"
       >
-        <ViewToggle icon={Table2} label="Rasteransicht" />
+        <ViewToggle icon={Table2} label="Rasteransicht" active />
         <ViewToggle icon={Calendar} label="Kalenderansicht" />
-        <ViewToggle icon={Columns3} label="Listenansicht" active />
+        <ViewToggle icon={Columns3} label="Listenansicht" />
       </div>
     </div>
   );
@@ -75,9 +72,20 @@ function ViewToggle({
       type="button"
       aria-label={label}
       aria-pressed={active}
-      className="flex items-center justify-center"
+      className={`relative flex aspect-square h-full shrink-0 items-center justify-center rounded-container transition-colors ${
+        active ? "text-icon-selected" : "text-icon-default hover:text-icon-hover"
+      }`}
     >
-      <Icon {...withIconClass()} />
+      {active && (
+        <span
+          aria-hidden
+          className="absolute inset-0 rounded-container bg-bg-light"
+        />
+      )}
+      <Icon
+        {...withIconClass("relative z-10")}
+        strokeWidth={0.75}
+      />
     </button>
   );
 }

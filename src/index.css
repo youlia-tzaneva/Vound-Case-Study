@@ -45,6 +45,14 @@
   --color-icon-default: #000000;
   --color-icon-hover: #434343;
   --color-icon-selected: #1f4e79;
+  --color-icon-disabled: #808284;
+
+  --color-button-primary-default: #1f4e79;
+  --color-button-primary-hover: #6283a1;
+  --color-button-primary-disabled: #d5d6d6;
+  --color-button-secondary-default: #000000;
+  --color-button-secondary-hover: #6283a1;
+  --color-button-secondary-disabled: #808284;
 
   /* Typography */
   --font-heading: "IBM Plex Sans", sans-serif;
@@ -159,5 +167,12 @@
     line-height: 1.3;
     letter-spacing: 0.42px;
     text-transform: uppercase;
+  }
+
+  .text-button {
+    font-size: var(--text-body);
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.48px;
   }
 }

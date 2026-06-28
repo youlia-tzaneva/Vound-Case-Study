@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 import { TenderSidePanel } from "./TenderSidePanel";
-import type { TenderPanelView } from "../../types/tender";
+import type { TenderPanelView, TenderSidebarUpdates } from "../../types/tender";
 
 interface TenderSidePanelDrawerProps {
   tender: TenderPanelView | null;
   isOpen: boolean;
   onClose: () => void;
   onClosed: () => void;
+  onTenderUpdate: (tenderId: string, updates: TenderSidebarUpdates) => void;
 }
 
 export function TenderSidePanelDrawer({
@@ -14,6 +15,7 @@ export function TenderSidePanelDrawer({
   isOpen,
   onClose,
   onClosed,
+  onTenderUpdate,
 }: TenderSidePanelDrawerProps) {
   useEffect(() => {
     if (!isOpen && tender) {
@@ -38,12 +40,16 @@ export function TenderSidePanelDrawer({
       />
 
       <div
-        className={`fixed inset-y-0 right-0 z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed inset-y-0 right-0 z-50 flex h-screen transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         aria-hidden={!isOpen}
       >
-        <TenderSidePanel tender={tender} onClose={onClose} />
+        <TenderSidePanel
+          tender={tender}
+          onClose={onClose}
+          onUpdate={(updates) => onTenderUpdate(tender.id, updates)}
+        />
       </div>
     </>
   );

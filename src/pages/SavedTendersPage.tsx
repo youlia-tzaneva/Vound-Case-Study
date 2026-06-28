@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { AppSidebar } from "../components/layout/AppSidebar";
 import { SavedViewsBar } from "../components/saved-tenders/SavedViewsBar";
 import { SavedTendersToolbar } from "../components/saved-tenders/SavedTendersToolbar";
@@ -9,17 +9,22 @@ import { LeadershipTendersTable } from "../components/saved-tenders/LeadershipTe
 import { TenderSidePanelDrawer } from "../components/saved-tenders/TenderSidePanelDrawer";
 import {
   currentUser,
-  mockTenders,
-  mockLeadershipTenders,
-  mockTeamTenders,
-  mockUrgentTenders,
+  mockTenders as initialTenders,
+  mockLeadershipTenders as initialLeadershipTenders,
+  mockTeamTenders as initialTeamTenders,
+  mockUrgentTenders as initialUrgentTenders,
   savedViews,
 } from "../data/mockTenders";
 import { toTenderPanelView } from "../data/tenderPanelDetails";
-import type { TenderListItem, TenderPanelView } from "../types/tender";
+import type {
+  TenderListItem,
+  TenderPanelView,
+  TenderSidebarUpdates,
+} from "../types/tender";
+import { mapTenderList } from "../utils/applyTenderSidebarUpdates";
 
 function filterTendersByView(
-  tenders: typeof mockTenders,
+  tenders: typeof initialTenders,
   viewId: string,
 ) {
   if (viewId === "my") {
@@ -32,6 +37,12 @@ function filterTendersByView(
 export function SavedTendersPage() {
   const [views, setViews] = useState(savedViews);
   const [searchQuery, setSearchQuery] = useState("");
+  const [tenders, setTenders] = useState(initialTenders);
+  const [urgentTenders, setUrgentTenders] = useState(initialUrgentTenders);
+  const [teamTenders, setTeamTenders] = useState(initialTeamTenders);
+  const [leadershipTenders, setLeadershipTenders] = useState(
+    initialLeadershipTenders,
+  );
   const [panelTender, setPanelTender] = useState<TenderPanelView | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
@@ -41,19 +52,19 @@ export function SavedTendersPage() {
   const isTeamView = activeViewId === "team";
   const isLeadershipView = activeViewId === "leadership";
 
-  const filteredTenders = filterTendersByView(mockTenders, activeViewId).filter(
+  const filteredTenders = filterTendersByView(tenders, activeViewId).filter(
     (tender) => tender.name.toLowerCase().includes(searchTerm),
   );
 
-  const filteredUrgentTenders = mockUrgentTenders.filter((tender) =>
+  const filteredUrgentTenders = urgentTenders.filter((tender) =>
     tender.name.toLowerCase().includes(searchTerm),
   );
 
-  const filteredTeamTenders = mockTeamTenders.filter((tender) =>
+  const filteredTeamTenders = teamTenders.filter((tender) =>
     tender.name.toLowerCase().includes(searchTerm),
   );
 
-  const filteredLeadershipTenders = mockLeadershipTenders.filter((tender) =>
+  const filteredLeadershipTenders = leadershipTenders.filter((tender) =>
     tender.name.toLowerCase().includes(searchTerm),
   );
 
@@ -77,11 +88,26 @@ export function SavedTendersPage() {
     setPanelTender(null);
   };
 
+  const handleTenderUpdate = useCallback(
+    (tenderId: string, updates: TenderSidebarUpdates) => {
+      setTenders((current) => mapTenderList(current, tenderId, updates));
+      setUrgentTenders((current) => mapTenderList(current, tenderId, updates));
+      setTeamTenders((current) => mapTenderList(current, tenderId, updates));
+      setLeadershipTenders((current) =>
+        mapTenderList(current, tenderId, updates),
+      );
+      setPanelTender((current) =>
+        current?.id === tenderId ? { ...current, ...updates } : current,
+      );
+    },
+    [],
+  );
+
   return (
-    <div className="flex h-full min-h-screen bg-bg-base">
+    <div className="flex h-screen overflow-hidden bg-bg-base">
       <AppSidebar />
 
-      <main className="flex min-w-0 flex-1 flex-col gap-xs px-l py-s">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-xs overflow-hidden px-l py-s">
         <h1 className="text-h2 text-text-primary">Projekte</h1>
 
         <div className="flex w-full flex-col gap-3xs">
@@ -124,6 +150,7 @@ export function SavedTendersPage() {
         isOpen={isPanelOpen}
         onClose={handlePanelClose}
         onClosed={handlePanelClosed}
+        onTenderUpdate={handleTenderUpdate}
       />
     </div>
   );

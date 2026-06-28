@@ -20,6 +20,13 @@ export interface TenderQualification {
   komplexitaetScore: number;
 }
 
+export interface TenderSidebarUpdates {
+  owner?: TenderOwner | null;
+  team?: string;
+  partner?: string;
+  qualification?: TenderQualification;
+}
+
 export interface TenderUpdate {
   title: string;
   isNew: boolean;

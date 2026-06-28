@@ -6,6 +6,28 @@ export const currentUser: TenderOwner = {
   color: "#e77b54",
 };
 
+export const panelUsers: TenderOwner[] = [
+  currentUser,
+  { name: "John Smith", initials: "J", color: "#a472e4" },
+  { name: "Marie Volker", initials: "M", color: "#24922f" },
+  { name: "Max Waltz", initials: "M", color: "#e91418" },
+  { name: "Johan Stein", initials: "J", color: "#4f84ee" },
+];
+
+export const panelTeams = [
+  "Hochbau",
+  "Tiefbau",
+  "Verkehr",
+  "Generalplanung",
+] as const;
+
+export const panelPartners = [
+  "Partner name",
+  "Planungsbüro Nord",
+  "Ingenieurgesellschaft Süd",
+  "Architekturbüro West",
+] as const;
+
 export const savedViews: SavedView[] = [
   { id: "all", label: "Alle Projekte", isActive: true },
   { id: "my", label: "Meine Projekte" },

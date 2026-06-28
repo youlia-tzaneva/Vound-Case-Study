@@ -9,23 +9,112 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { Avatar } from "../ui/Avatar";
 import { withIconClass } from "../ui/iconProps";
-import type { TenderPanelView } from "../../types/tender";
-import { statusLabels } from "../../data/mockTenders";
+import type {
+  TenderOwner,
+  TenderPanelView,
+  TenderSidebarUpdates,
+} from "../../types/tender";
+import {
+  currentUser,
+  panelPartners,
+  panelTeams,
+  panelUsers,
+  statusLabels,
+} from "../../data/mockTenders";
+import { PanelDropdown, PanelDropdownOption } from "./PanelDropdown";
 
 interface TenderSidePanelProps {
   tender: TenderPanelView;
   onClose: () => void;
+  onUpdate: (updates: TenderSidebarUpdates) => void;
 }
 
-export function TenderSidePanel({ tender, onClose }: TenderSidePanelProps) {
+type PanelCornerRadius = "both" | "top" | "none" | "bottom";
+
+const SCROLL_THRESHOLD = 1;
+
+const cornerRadiusClass: Record<PanelCornerRadius, string> = {
+  both: "rounded-tl-[8px] rounded-bl-[8px]",
+  top: "rounded-tl-[8px]",
+  none: "",
+  bottom: "rounded-bl-[8px]",
+};
+
+function resolveCornerRadius(element: HTMLElement): PanelCornerRadius {
+  const { scrollTop, scrollHeight, clientHeight } = element;
+  const hasOverflow = scrollHeight - clientHeight > SCROLL_THRESHOLD;
+
+  if (!hasOverflow) {
+    return "both";
+  }
+
+  const atTop = scrollTop <= SCROLL_THRESHOLD;
+  const atBottom =
+    scrollTop + clientHeight >= scrollHeight - SCROLL_THRESHOLD;
+
+  if (atTop) {
+    return "top";
+  }
+
+  if (atBottom) {
+    return "bottom";
+  }
+
+  return "none";
+}
+
+export function TenderSidePanel({
+  tender,
+  onClose,
+  onUpdate,
+}: TenderSidePanelProps) {
+  const panelRef = useRef<HTMLElement>(null);
+  const [cornerRadius, setCornerRadius] = useState<PanelCornerRadius>("top");
+
+  const updateCornerRadius = useCallback(() => {
+    const element = panelRef.current;
+    if (!element) {
+      return;
+    }
+
+    setCornerRadius(resolveCornerRadius(element));
+  }, []);
+
+  useEffect(() => {
+    const element = panelRef.current;
+    if (!element) {
+      return;
+    }
+
+    element.scrollTop = 0;
+    updateCornerRadius();
+
+    element.addEventListener("scroll", updateCornerRadius, { passive: true });
+
+    const resizeObserver = new ResizeObserver(updateCornerRadius);
+    resizeObserver.observe(element);
+
+    return () => {
+      element.removeEventListener("scroll", updateCornerRadius);
+      resizeObserver.disconnect();
+    };
+  }, [tender.id, updateCornerRadius]);
+
   return (
     <aside
+      ref={panelRef}
       aria-label={`Projektdetails: ${tender.name}`}
-      className="flex h-full w-[644px] max-w-full flex-col gap-m overflow-y-auto rounded-tl-[8px] rounded-bl-[8px] border-l border-border-light bg-bg-containers p-m"
+      className={`flex h-full w-[644px] max-w-full flex-col gap-m overflow-y-auto border-l border-border-light bg-bg-containers p-m ${cornerRadiusClass[cornerRadius]}`}
     >
       <header className="flex shrink-0 items-start gap-xs">
         <div className="min-w-0 flex-1">
@@ -48,7 +137,7 @@ export function TenderSidePanel({ tender, onClose }: TenderSidePanelProps) {
           <ProjectDetailsSection tender={tender} />
         </div>
 
-        <SidebarSection tender={tender} />
+        <SidebarSection tender={tender} onUpdate={onUpdate} />
       </div>
 
       <ActivitySection tender={tender} />
@@ -129,44 +218,177 @@ function ProjectDetailsSection({ tender }: { tender: TenderPanelView }) {
   );
 }
 
-function SidebarSection({ tender }: { tender: TenderPanelView }) {
+function SidebarSection({
+  tender,
+  onUpdate,
+}: {
+  tender: TenderPanelView;
+  onUpdate: (updates: TenderSidebarUpdates) => void;
+}) {
+  const [owner, setOwner] = useState<TenderOwner | null>(tender.owner);
+  const [team, setTeam] = useState(tender.team);
+  const [partner, setPartner] = useState(tender.partner);
+  const [qualification, setQualification] = useState(tender.qualification);
+  const [selectedVote, setSelectedVote] = useState<
+    "yes" | "neutral" | "no" | null
+  >(null);
+  const [openDropdown, setOpenDropdown] = useState<
+    "owner" | "team" | "partner" | null
+  >(null);
+
+  useEffect(() => {
+    setOwner(tender.owner);
+    setTeam(tender.team);
+    setPartner(tender.partner);
+    setQualification(tender.qualification);
+    setSelectedVote(null);
+    setOpenDropdown(null);
+  }, [tender.id]);
+
+  const toggleDropdown = (id: "owner" | "team" | "partner") => {
+    setOpenDropdown((current) => (current === id ? null : id));
+  };
+
+  const handleVote = (type: "yes" | "neutral" | "no") => {
+    const nextQualification = { ...qualification };
+    let nextSelectedVote: "yes" | "neutral" | "no" | null = selectedVote;
+
+    if (selectedVote === type) {
+      if (type === "yes") {
+        nextQualification.votesYes = Math.max(0, nextQualification.votesYes - 1);
+      } else if (type === "neutral") {
+        nextQualification.votesNeutral = Math.max(
+          0,
+          nextQualification.votesNeutral - 1,
+        );
+      } else {
+        nextQualification.votesNo = Math.max(0, nextQualification.votesNo - 1);
+      }
+      nextSelectedVote = null;
+    } else {
+      if (selectedVote === "yes") {
+        nextQualification.votesYes = Math.max(0, nextQualification.votesYes - 1);
+      } else if (selectedVote === "neutral") {
+        nextQualification.votesNeutral = Math.max(
+          0,
+          nextQualification.votesNeutral - 1,
+        );
+      } else if (selectedVote === "no") {
+        nextQualification.votesNo = Math.max(0, nextQualification.votesNo - 1);
+      }
+
+      if (type === "yes") {
+        nextQualification.votesYes += 1;
+      } else if (type === "neutral") {
+        nextQualification.votesNeutral += 1;
+      } else {
+        nextQualification.votesNo += 1;
+      }
+      nextSelectedVote = type;
+    }
+
+    setQualification(nextQualification);
+    setSelectedVote(nextSelectedVote);
+    onUpdate({ qualification: nextQualification });
+  };
+
   return (
     <aside className="flex w-[197px] shrink-0 flex-col gap-m rounded-container border border-border-light p-xs">
       <section className="flex flex-col gap-xs">
         <h3 className="text-eyebrow text-text-primary">Team</h3>
 
         <Field label="Projekt Owner">
-          <SelectField>
-            {tender.owner ? (
-              <>
-                <Avatar
-                  initials={tender.owner.initials}
-                  color={tender.owner.color}
-                />
+          <PanelDropdown
+            isOpen={openDropdown === "owner"}
+            onToggle={() => toggleDropdown("owner")}
+            onClose={() => setOpenDropdown(null)}
+            ariaLabel="Projekt Owner auswählen"
+            trigger={
+              owner ? (
+                <>
+                  <Avatar initials={owner.initials} color={owner.color} />
+                  <span className="min-w-0 flex-1 truncate text-body text-text-primary">
+                    {owner.name}
+                  </span>
+                </>
+              ) : (
+                <span className="text-body text-text-secondary">Unbekannt</span>
+              )
+            }
+          >
+            {panelUsers.map((user) => (
+              <PanelDropdownOption
+                key={user.name}
+                isSelected={owner?.name === user.name}
+                onSelect={() => {
+                  setOwner(user);
+                  onUpdate({ owner: user });
+                  setOpenDropdown(null);
+                }}
+              >
+                <Avatar initials={user.initials} color={user.color} />
                 <span className="min-w-0 flex-1 truncate text-body text-text-primary">
-                  {tender.owner.name}
+                  {user.name}
                 </span>
-              </>
-            ) : (
-              <span className="text-body text-text-secondary">Unbekannt</span>
-            )}
-          </SelectField>
+              </PanelDropdownOption>
+            ))}
+          </PanelDropdown>
         </Field>
 
         <Field label="Team">
-          <SelectField>
-            <span className="min-w-0 flex-1 truncate text-body text-text-primary">
-              {tender.team}
-            </span>
-          </SelectField>
+          <PanelDropdown
+            isOpen={openDropdown === "team"}
+            onToggle={() => toggleDropdown("team")}
+            onClose={() => setOpenDropdown(null)}
+            ariaLabel="Team auswählen"
+            trigger={
+              <span className="min-w-0 flex-1 truncate text-body text-text-primary">
+                {team}
+              </span>
+            }
+          >
+            {panelTeams.map((option) => (
+              <PanelDropdownOption
+                key={option}
+                isSelected={team === option}
+                onSelect={() => {
+                  setTeam(option);
+                  onUpdate({ team: option });
+                  setOpenDropdown(null);
+                }}
+              >
+                <span className="text-body text-text-primary">{option}</span>
+              </PanelDropdownOption>
+            ))}
+          </PanelDropdown>
         </Field>
 
         <Field label="Partner">
-          <SelectField>
-            <span className="min-w-0 flex-1 truncate text-body text-text-primary">
-              {tender.partner}
-            </span>
-          </SelectField>
+          <PanelDropdown
+            isOpen={openDropdown === "partner"}
+            onToggle={() => toggleDropdown("partner")}
+            onClose={() => setOpenDropdown(null)}
+            ariaLabel="Partner auswählen"
+            trigger={
+              <span className="min-w-0 flex-1 truncate text-body text-text-primary">
+                {partner}
+              </span>
+            }
+          >
+            {panelPartners.map((option) => (
+              <PanelDropdownOption
+                key={option}
+                isSelected={partner === option}
+                onSelect={() => {
+                  setPartner(option);
+                  onUpdate({ partner: option });
+                  setOpenDropdown(null);
+                }}
+              >
+                <span className="text-body text-text-primary">{option}</span>
+              </PanelDropdownOption>
+            ))}
+          </PanelDropdown>
         </Field>
       </section>
 
@@ -174,24 +396,46 @@ function SidebarSection({ tender }: { tender: TenderPanelView }) {
         <h3 className="text-eyebrow text-text-primary">Qualifikation</h3>
 
         <Field label="Votes">
-          <VoteBadges qualification={tender.qualification} />
+          <VoteBadges
+            qualification={qualification}
+            selectedVote={selectedVote}
+            onVote={handleVote}
+          />
         </Field>
 
         <Field label="Relevanz-Score">
           <ScoreIcons
-            score={tender.qualification.relevanzScore}
+            score={qualification.relevanzScore}
             icon={Star}
             filledClassName="fill-status-progress-text text-status-progress-text"
             emptyClassName="text-border-dark"
+            onScoreChange={(score) => {
+              const nextQualification = {
+                ...qualification,
+                relevanzScore: score,
+              };
+              setQualification(nextQualification);
+              onUpdate({ qualification: nextQualification });
+            }}
+            ariaLabel="Relevanz-Score"
           />
         </Field>
 
         <Field label="Komplexität-Score">
           <ScoreIcons
-            score={tender.qualification.komplexitaetScore}
+            score={qualification.komplexitaetScore}
             icon={Wrench}
             filledClassName="text-scoring-low"
             emptyClassName="text-border-dark"
+            onScoreChange={(score) => {
+              const nextQualification = {
+                ...qualification,
+                komplexitaetScore: score,
+              };
+              setQualification(nextQualification);
+              onUpdate({ qualification: nextQualification });
+            }}
+            ariaLabel="Komplexität-Score"
           />
         </Field>
       </section>
@@ -250,7 +494,7 @@ function ActivitySection({ tender }: { tender: TenderPanelView }) {
 
         <Field label="Zeitleiste">
           <div className="rounded-[2px] border border-border-light px-xs py-xs">
-            <div className="flex gap-xs">
+            <div className="flex gap-m">
               <p className="max-w-[324px] flex-1 text-table text-text-primary">
                 {tender.timelineDescription}
               </p>
@@ -282,15 +526,6 @@ function Field({
   );
 }
 
-function SelectField({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between gap-4xs rounded-[2px] border border-border-light px-3xs py-4xs">
-      <div className="flex min-w-0 flex-1 items-center gap-4xs">{children}</div>
-      <ChevronDown {...withIconClass()} size={24} />
-    </div>
-  );
-}
-
 function DeadlineText({ deadline }: { deadline: string }) {
   const [date, time] = deadline.split(" | ");
 
@@ -305,23 +540,63 @@ function DeadlineText({ deadline }: { deadline: string }) {
 
 function VoteBadges({
   qualification,
+  selectedVote,
+  onVote,
 }: {
   qualification: TenderPanelView["qualification"];
+  selectedVote: "yes" | "neutral" | "no" | null;
+  onVote: (type: "yes" | "neutral" | "no") => void;
 }) {
   return (
     <div className="flex flex-wrap gap-3xs">
-      <span className="inline-flex items-center gap-4xs rounded-pill border border-scoring-high bg-status-success-bg px-3xs py-[2px] text-badge text-text-primary">
+      <button
+        type="button"
+        onClick={() => onVote("yes")}
+        aria-label="Positiv abstimmen"
+        className="inline-flex items-center gap-4xs rounded-pill border border-scoring-high bg-status-success-bg px-3xs py-[2px] text-badge text-text-primary"
+      >
         <ThumbsUp {...withIconClass("text-scoring-high")} size={12} />
         {qualification.votesYes}
-      </span>
-      <span className="inline-flex items-center gap-4xs rounded-pill border border-border-dark bg-bg-light px-3xs py-[2px] text-badge text-text-primary">
+        {selectedVote === "yes" && (
+          <Avatar
+            initials={currentUser.initials}
+            color={currentUser.color}
+            size={14}
+          />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => onVote("neutral")}
+        aria-label="Neutral abstimmen"
+        className="inline-flex items-center gap-4xs rounded-pill border border-border-dark bg-bg-light px-3xs py-[2px] text-badge text-text-primary"
+      >
         <span>-</span>
         {qualification.votesNeutral}
-      </span>
-      <span className="inline-flex items-center gap-4xs rounded-pill border border-scoring-low bg-status-rejected-bg px-3xs py-[2px] text-badge text-text-primary">
+        {selectedVote === "neutral" && (
+          <Avatar
+            initials={currentUser.initials}
+            color={currentUser.color}
+            size={14}
+          />
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => onVote("no")}
+        aria-label="Negativ abstimmen"
+        className="inline-flex items-center gap-4xs rounded-pill border border-scoring-low bg-status-rejected-bg px-3xs py-[2px] text-badge text-text-primary"
+      >
         <ThumbsDown {...withIconClass("text-scoring-low")} size={12} />
         {qualification.votesNo}
-      </span>
+        {selectedVote === "no" && (
+          <Avatar
+            initials={currentUser.initials}
+            color={currentUser.color}
+            size={14}
+          />
+        )}
+      </button>
     </div>
   );
 }
@@ -331,22 +606,39 @@ function ScoreIcons({
   icon: Icon,
   filledClassName,
   emptyClassName,
+  onScoreChange,
+  ariaLabel,
 }: {
   score: number;
   icon: LucideIcon;
   filledClassName: string;
   emptyClassName: string;
+  onScoreChange: (score: number) => void;
+  ariaLabel: string;
 }) {
   return (
-    <div className="flex gap-4xs">
-      {Array.from({ length: 5 }, (_, index) => (
-        <Icon
-          key={index}
-          {...withIconClass(index < score ? filledClassName : emptyClassName)}
-          size={16}
-          fill={Icon === Star && index < score ? "currentColor" : "none"}
-        />
-      ))}
+    <div className="flex gap-4xs" role="group" aria-label={ariaLabel}>
+      {Array.from({ length: 5 }, (_, index) => {
+        const value = index + 1;
+        const isFilled = index < score;
+
+        return (
+          <button
+            key={index}
+            type="button"
+            aria-label={`${value} von 5`}
+            aria-pressed={isFilled}
+            onClick={() => onScoreChange(value)}
+            className="flex items-center justify-center"
+          >
+            <Icon
+              {...withIconClass(isFilled ? filledClassName : emptyClassName)}
+              size={16}
+              fill={Icon === Star && isFilled ? "currentColor" : "none"}
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -404,25 +696,36 @@ function Timeline({
   events: TenderPanelView["timelineEvents"];
 }) {
   return (
-    <div className="flex min-w-[184px] gap-xs">
-      <div className="relative flex w-2 flex-col items-center">
-        {events.map((_, index) => (
-          <div key={index} className="flex flex-1 flex-col items-center">
-            <span className="size-2 rounded-full bg-border-dark" />
-            {index < events.length - 1 && (
-              <span className="w-px flex-1 bg-border-light" />
-            )}
+    <div className="flex min-w-[184px] flex-col">
+      {events.map((event, index) => {
+        const isLast = index === events.length - 1;
+
+        return (
+          <div
+            key={event.label}
+            className={`flex gap-xs ${!isLast ? "pb-s" : ""}`}
+          >
+            <div className="flex w-2 shrink-0 flex-col items-center">
+              <div className="flex h-[17px] shrink-0 items-center">
+                <span
+                  className={`size-2 rounded-full ${
+                    index === 0 ? "bg-text-primary" : "bg-border-dark"
+                  }`}
+                />
+              </div>
+              <div className="w-px flex-1 bg-border-light" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-4xs">
+              <span className="text-small leading-[1.2] text-text-secondary">
+                {event.label}
+              </span>
+              <span className="text-table font-medium text-text-primary">
+                {event.value}
+              </span>
+            </div>
           </div>
-        ))}
-      </div>
-      <div className="flex flex-col gap-s">
-        {events.map((event) => (
-          <div key={event.label} className="flex flex-col gap-4xs">
-            <span className="text-small text-text-secondary">{event.label}</span>
-            <span className="text-table text-text-primary">{event.value}</span>
-          </div>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }

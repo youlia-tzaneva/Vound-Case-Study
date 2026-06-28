@@ -12,7 +12,7 @@ export function SavedViewsBar({ views, onSelect }: SavedViewsBarProps) {
     <div
       role="tablist"
       aria-label="Gespeicherte Ansichten"
-      className="flex w-full items-center gap-l rounded-container border border-border-light bg-bg-containers p-3xs"
+      className="flex w-full items-center gap-5xs rounded-container border border-border-light bg-bg-containers p-3xs"
     >
       {views.map((view) => (
         <button

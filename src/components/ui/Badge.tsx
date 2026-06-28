@@ -76,3 +76,20 @@ export function urgencyToVariant(
 ): BadgeVariant {
   return urgency === "overdue" ? "urgency-overdue" : "urgency-deadline";
 }
+
+export function urgentReasonToVariant(
+  reason:
+    | "warten-auf-abstimmung"
+    | "frist-geaendert"
+    | "neues-dokument"
+    | "kein-projekt-owner",
+): BadgeVariant {
+  const map = {
+    "warten-auf-abstimmung": "status-progress",
+    "frist-geaendert": "urgency-overdue",
+    "neues-dokument": "status-info",
+    "kein-projekt-owner": "urgency-overdue",
+  } as const;
+
+  return map[reason];
+}

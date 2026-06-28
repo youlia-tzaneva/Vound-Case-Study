@@ -3,14 +3,39 @@ import { AppSidebar } from "../components/layout/AppSidebar";
 import { SavedViewsBar } from "../components/saved-tenders/SavedViewsBar";
 import { SavedTendersToolbar } from "../components/saved-tenders/SavedTendersToolbar";
 import { TendersTable } from "../components/saved-tenders/TendersTable";
-import { mockTenders, savedViews } from "../data/mockTenders";
+import { UrgentTendersTable } from "../components/saved-tenders/UrgentTendersTable";
+import {
+  currentUser,
+  mockTenders,
+  mockUrgentTenders,
+  savedViews,
+} from "../data/mockTenders";
+
+function filterTendersByView(
+  tenders: typeof mockTenders,
+  viewId: string,
+) {
+  if (viewId === "my") {
+    return tenders.filter((tender) => tender.owner.name === currentUser.name);
+  }
+
+  return tenders;
+}
 
 export function SavedTendersPage() {
   const [views, setViews] = useState(savedViews);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredTenders = mockTenders.filter((tender) =>
-    tender.name.toLowerCase().includes(searchQuery.trim().toLowerCase()),
+  const activeViewId = views.find((view) => view.isActive)?.id ?? "all";
+  const searchTerm = searchQuery.trim().toLowerCase();
+  const isUrgentView = activeViewId === "attention";
+
+  const filteredTenders = filterTendersByView(mockTenders, activeViewId).filter(
+    (tender) => tender.name.toLowerCase().includes(searchTerm),
+  );
+
+  const filteredUrgentTenders = mockUrgentTenders.filter((tender) =>
+    tender.name.toLowerCase().includes(searchTerm),
   );
 
   const handleViewSelect = (id: string) => {
@@ -34,7 +59,11 @@ export function SavedTendersPage() {
           />
         </div>
 
-        <TendersTable tenders={filteredTenders} />
+        {isUrgentView ? (
+          <UrgentTendersTable tenders={filteredUrgentTenders} />
+        ) : (
+          <TendersTable tenders={filteredTenders} />
+        )}
       </main>
     </div>
   );

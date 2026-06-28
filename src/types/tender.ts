@@ -50,3 +50,23 @@ export interface SavedView {
   label: string;
   isActive?: boolean;
 }
+
+export type UrgentReasonType =
+  | "warten-auf-abstimmung"
+  | "frist-geaendert"
+  | "neues-dokument"
+  | "kein-projekt-owner";
+
+export interface UrgentTender {
+  id: string;
+  name: string;
+  location: string;
+  urgentReason: UrgentReasonType;
+  deadline: string;
+  urgency: UrgencyType;
+  urgencyLabel?: string;
+  status: TenderStatus;
+  update: TenderUpdate | null;
+  owner: TenderOwner | null;
+  qualification: TenderQualification;
+}

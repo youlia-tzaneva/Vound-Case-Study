@@ -70,3 +70,18 @@ export interface UrgentTender {
   owner: TenderOwner | null;
   qualification: TenderQualification;
 }
+
+export interface TeamTender {
+  id: string;
+  name: string;
+  location: string;
+  leistungsart: string;
+  lp: string;
+  status: TenderStatus;
+  deadline: string;
+  urgency: UrgencyType;
+  urgencyLabel?: string;
+  update: TenderUpdate | null;
+  owner: TenderOwner;
+  team: string;
+}

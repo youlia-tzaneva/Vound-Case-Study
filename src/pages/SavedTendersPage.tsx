@@ -4,9 +4,11 @@ import { SavedViewsBar } from "../components/saved-tenders/SavedViewsBar";
 import { SavedTendersToolbar } from "../components/saved-tenders/SavedTendersToolbar";
 import { TendersTable } from "../components/saved-tenders/TendersTable";
 import { UrgentTendersTable } from "../components/saved-tenders/UrgentTendersTable";
+import { TeamTendersTable } from "../components/saved-tenders/TeamTendersTable";
 import {
   currentUser,
   mockTenders,
+  mockTeamTenders,
   mockUrgentTenders,
   savedViews,
 } from "../data/mockTenders";
@@ -29,12 +31,17 @@ export function SavedTendersPage() {
   const activeViewId = views.find((view) => view.isActive)?.id ?? "all";
   const searchTerm = searchQuery.trim().toLowerCase();
   const isUrgentView = activeViewId === "attention";
+  const isTeamView = activeViewId === "team";
 
   const filteredTenders = filterTendersByView(mockTenders, activeViewId).filter(
     (tender) => tender.name.toLowerCase().includes(searchTerm),
   );
 
   const filteredUrgentTenders = mockUrgentTenders.filter((tender) =>
+    tender.name.toLowerCase().includes(searchTerm),
+  );
+
+  const filteredTeamTenders = mockTeamTenders.filter((tender) =>
     tender.name.toLowerCase().includes(searchTerm),
   );
 
@@ -61,6 +68,8 @@ export function SavedTendersPage() {
 
         {isUrgentView ? (
           <UrgentTendersTable tenders={filteredUrgentTenders} />
+        ) : isTeamView ? (
+          <TeamTendersTable tenders={filteredTeamTenders} />
         ) : (
           <TendersTable tenders={filteredTenders} />
         )}

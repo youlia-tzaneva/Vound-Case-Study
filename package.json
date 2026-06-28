@@ -3,9 +3,13 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "check:data": "node scripts/check-data-exports.mjs",
+    "dev": "npm run check:data && vite",
+    "build": "npm run check:data && tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

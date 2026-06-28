@@ -85,3 +85,17 @@ export interface TeamTender {
   owner: TenderOwner;
   team: string;
 }
+
+export interface LeadershipTender {
+  id: string;
+  name: string;
+  location: string;
+  status: TenderStatus;
+  deadline: string;
+  urgency: UrgencyType;
+  urgencyLabel?: string;
+  volumen: string;
+  qualification: TenderQualification;
+  owner: TenderOwner;
+  team: string;
+}

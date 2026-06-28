@@ -1,5 +1,6 @@
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { Avatar } from "../ui/Avatar";
+import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { TeamTender } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
@@ -20,6 +21,9 @@ export function TeamTendersTable({ tenders }: TeamTendersTableProps) {
       <table className="w-full min-w-[1100px] border-collapse">
         <thead>
           <tr>
+            <th scope="col" className={`${thClass} w-[52px]`}>
+              <span className="sr-only">Auswählen</span>
+            </th>
             <th scope="col" className={`${thClass} min-w-[198px]`}>
               Name
             </th>
@@ -59,6 +63,9 @@ export function TeamTendersTable({ tenders }: TeamTendersTableProps) {
 function TeamTenderRow({ tender }: { tender: TeamTender }) {
   return (
     <tr className="group">
+      <td className={tdClass}>
+        <Checkbox label={`${tender.name} auswählen`} />
+      </td>
       <td className={tdClass}>
         <div className="flex flex-col gap-4xs break-words">
           <span className="text-tender-title text-text-primary">

@@ -5,9 +5,11 @@ import { SavedTendersToolbar } from "../components/saved-tenders/SavedTendersToo
 import { TendersTable } from "../components/saved-tenders/TendersTable";
 import { UrgentTendersTable } from "../components/saved-tenders/UrgentTendersTable";
 import { TeamTendersTable } from "../components/saved-tenders/TeamTendersTable";
+import { LeadershipTendersTable } from "../components/saved-tenders/LeadershipTendersTable";
 import {
   currentUser,
   mockTenders,
+  mockLeadershipTenders,
   mockTeamTenders,
   mockUrgentTenders,
   savedViews,
@@ -32,6 +34,7 @@ export function SavedTendersPage() {
   const searchTerm = searchQuery.trim().toLowerCase();
   const isUrgentView = activeViewId === "attention";
   const isTeamView = activeViewId === "team";
+  const isLeadershipView = activeViewId === "leadership";
 
   const filteredTenders = filterTendersByView(mockTenders, activeViewId).filter(
     (tender) => tender.name.toLowerCase().includes(searchTerm),
@@ -42,6 +45,10 @@ export function SavedTendersPage() {
   );
 
   const filteredTeamTenders = mockTeamTenders.filter((tender) =>
+    tender.name.toLowerCase().includes(searchTerm),
+  );
+
+  const filteredLeadershipTenders = mockLeadershipTenders.filter((tender) =>
     tender.name.toLowerCase().includes(searchTerm),
   );
 
@@ -70,6 +77,8 @@ export function SavedTendersPage() {
           <UrgentTendersTable tenders={filteredUrgentTenders} />
         ) : isTeamView ? (
           <TeamTendersTable tenders={filteredTeamTenders} />
+        ) : isLeadershipView ? (
+          <LeadershipTendersTable tenders={filteredLeadershipTenders} />
         ) : (
           <TendersTable tenders={filteredTenders} />
         )}

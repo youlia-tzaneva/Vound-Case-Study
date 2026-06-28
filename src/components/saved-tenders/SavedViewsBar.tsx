@@ -33,7 +33,7 @@ export function SavedViewsBar({ views, onSelect }: SavedViewsBarProps) {
       <button
         type="button"
         aria-label="Neue Ansicht hinzufügen"
-        className="ml-auto flex size-6 shrink-0 items-center justify-center"
+        className="flex size-6 shrink-0 items-center justify-center"
       >
         <Plus {...withIconClass()} />
       </button>

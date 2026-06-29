@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
+import { Badge, statusToVariant } from "../ui/Badge";
+import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { TeamTender, TenderOwner } from "../../types/tender";
@@ -130,11 +131,7 @@ function TeamTenderRow({
       </td>
       <td className={cellClass()}>
         <div className="flex flex-col gap-3xs">
-          {tender.urgency && tender.urgencyLabel && (
-            <Badge variant={urgencyToVariant(tender.urgency)}>
-              {tender.urgencyLabel}
-            </Badge>
-          )}
+          <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
           <DeadlineText deadline={tender.deadline} />
         </div>
       </td>

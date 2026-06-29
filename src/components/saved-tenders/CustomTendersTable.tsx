@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
+import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
@@ -8,6 +9,7 @@ import type { TableColumnId } from "../../data/tableColumns";
 import { allTableColumns, ensureSelectColumnFirst } from "../../data/tableColumns";
 import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
+import { QualificationCell } from "./QualificationCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface CustomTendersTableProps {
@@ -16,6 +18,10 @@ interface CustomTendersTableProps {
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onQualificationChange?: (
+    tenderId: string,
+    qualification: Tender["qualification"],
+  ) => void;
 }
 
 export function CustomTendersTable({
@@ -24,6 +30,7 @@ export function CustomTendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
+  onQualificationChange,
 }: CustomTendersTableProps) {
   const orderedColumns = ensureSelectColumnFirst(columns);
   const columnLabels = new Map(allTableColumns.map((column) => [column.id, column.label]));
@@ -57,6 +64,9 @@ export function CustomTendersTable({
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onQualificationChange={(qualification) =>
+                onQualificationChange?.(tender.id, qualification)
+              }
             />
           ))}
         </tbody>
@@ -71,12 +81,14 @@ function CustomTenderRow({
   isActive,
   onOpen,
   onOwnerChange,
+  onQualificationChange,
 }: {
   tender: Tender;
   columns: TableColumnId[];
   isActive: boolean;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onQualificationChange?: (qualification: Tender["qualification"]) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -100,6 +112,7 @@ function CustomTenderRow({
             selected={selected}
             onSelectedChange={setSelected}
             onOwnerChange={onOwnerChange}
+            onQualificationChange={onQualificationChange}
           />
         </td>
       ))}
@@ -113,12 +126,14 @@ function ColumnCell({
   selected,
   onSelectedChange,
   onOwnerChange,
+  onQualificationChange,
 }: {
   columnId: TableColumnId;
   tender: Tender;
   selected: boolean;
   onSelectedChange: (selected: boolean) => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onQualificationChange?: (qualification: Tender["qualification"]) => void;
 }) {
   switch (columnId) {
     case "select":
@@ -145,11 +160,7 @@ function ColumnCell({
     case "deadline":
       return (
         <div className="flex flex-col gap-3xs">
-          {tender.urgency && tender.urgencyLabel && (
-            <Badge variant={urgencyToVariant(tender.urgency)}>
-              {tender.urgencyLabel}
-            </Badge>
-          )}
+          <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
           <DeadlineText deadline={tender.deadline} />
         </div>
       );
@@ -166,7 +177,13 @@ function ColumnCell({
         <ProjectOwnerCell owner={tender.owner} onOwnerChange={onOwnerChange} />
       );
     case "qualification":
-      return <QualificationCell qualification={tender.qualification} />;
+      return (
+        <QualificationCell
+          tenderId={tender.id}
+          qualification={tender.qualification}
+          onQualificationChange={onQualificationChange}
+        />
+      );
     case "comments":
       return <CommentsCell comment={tender.comment} />;
     case "service-type":
@@ -192,35 +209,6 @@ function DeadlineText({ deadline }: { deadline: string }) {
       <span className="text-border-dark"> | </span>
       {time}
     </span>
-  );
-}
-
-function QualificationCell({
-  qualification,
-}: {
-  qualification: Tender["qualification"];
-}) {
-  return (
-    <div className="flex flex-col gap-3xs whitespace-nowrap">
-      <div className="flex items-center justify-between gap-xs">
-        <span>Votes:</span>
-        <span>
-          <span className="text-scoring-high">{qualification.votesYes}</span>
-          {" / "}
-          {qualification.votesNeutral}
-          {" / "}
-          <span className="text-scoring-low">{qualification.votesNo}</span>
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-xs">
-        <span>Relevanz-Score:</span>
-        <span>{qualification.relevanzScore}</span>
-      </div>
-      <div className="flex items-center justify-between gap-xs">
-        <span>Komplexität-Score:</span>
-        <span>{qualification.komplexitaetScore}</span>
-      </div>
-    </div>
   );
 }
 

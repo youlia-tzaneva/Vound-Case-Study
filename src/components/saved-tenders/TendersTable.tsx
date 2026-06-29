@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
+import { Badge, statusToVariant } from "../ui/Badge";
+import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { Tender, TenderOwner } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
+import { QualificationCell } from "./QualificationCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface TendersTableProps {
@@ -13,6 +15,10 @@ interface TendersTableProps {
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onQualificationChange?: (
+    tenderId: string,
+    qualification: Tender["qualification"],
+  ) => void;
 }
 
 export function TendersTable({
@@ -20,6 +26,7 @@ export function TendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
+  onQualificationChange,
 }: TendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -60,6 +67,9 @@ export function TendersTable({
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onQualificationChange={(qualification) =>
+                onQualificationChange?.(tender.id, qualification)
+              }
             />
           ))}
         </tbody>
@@ -73,11 +83,13 @@ function TenderRow({
   isActive,
   onOpen,
   onOwnerChange,
+  onQualificationChange,
 }: {
   tender: Tender;
   isActive: boolean;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onQualificationChange?: (qualification: Tender["qualification"]) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -107,11 +119,7 @@ function TenderRow({
       </td>
       <td className={cellClass()}>
         <div className="flex flex-col gap-3xs">
-          {tender.urgency && tender.urgencyLabel && (
-            <Badge variant={urgencyToVariant(tender.urgency)}>
-              {tender.urgencyLabel}
-            </Badge>
-          )}
+          <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
           <DeadlineText deadline={tender.deadline} />
         </div>
       </td>
@@ -127,7 +135,11 @@ function TenderRow({
         />
       </td>
       <td className={cellClass()}>
-        <QualificationCell qualification={tender.qualification} />
+        <QualificationCell
+          tenderId={tender.id}
+          qualification={tender.qualification}
+          onQualificationChange={onQualificationChange}
+        />
       </td>
       <td className={cellClass()}>
         <UpdatesCell update={tender.update} />
@@ -148,35 +160,6 @@ function DeadlineText({ deadline }: { deadline: string }) {
       <span className="text-border-dark"> | </span>
       {time}
     </span>
-  );
-}
-
-function QualificationCell({
-  qualification,
-}: {
-  qualification: Tender["qualification"];
-}) {
-  return (
-    <div className="flex flex-col gap-3xs whitespace-nowrap">
-      <div className="flex items-center justify-between gap-xs">
-        <span>Votes:</span>
-        <span>
-          <span className="text-scoring-high">{qualification.votesYes}</span>
-          {" / "}
-          {qualification.votesNeutral}
-          {" / "}
-          <span className="text-scoring-low">{qualification.votesNo}</span>
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-xs">
-        <span>Relevanz-Score:</span>
-        <span>{qualification.relevanzScore}</span>
-      </div>
-      <div className="flex items-center justify-between gap-xs">
-        <span>Komplexität-Score:</span>
-        <span>{qualification.komplexitaetScore}</span>
-      </div>
-    </div>
   );
 }
 

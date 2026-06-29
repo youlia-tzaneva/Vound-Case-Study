@@ -92,7 +92,7 @@ export function SavedViewsBar({
             aria-selected={view.isActive}
             onClick={() => onSelect?.(view.id)}
             onContextMenu={(event) => handleViewContextMenu(event, view)}
-            className={`shrink-0 rounded-container px-xs py-2xs text-body transition-colors ${
+            className={`shrink-0 rounded-[2px] px-xs py-2xs text-body transition-colors ${
               view.isActive
                 ? "bg-accent-secondary text-text-inverted"
                 : "text-text-primary hover:text-text-accent"

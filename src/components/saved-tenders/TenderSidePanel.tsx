@@ -16,7 +16,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
+import { Badge, statusToVariant } from "../ui/Badge";
+import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Avatar } from "../ui/Avatar";
 import { withIconClass } from "../ui/iconProps";
 import type {
@@ -31,6 +32,7 @@ import {
   panelUsers,
   statusLabels,
 } from "../../data/mockTenders";
+import { applyVote } from "../../utils/applyVote";
 import { PanelDropdown, PanelDropdownOption } from "./PanelDropdown";
 
 interface TenderSidePanelProps {
@@ -153,11 +155,7 @@ function OverviewSection({ tender }: { tender: TenderPanelView }) {
       <div className="grid grid-cols-2 gap-xs">
         <Field label="Abgabefrist">
           <div className="flex flex-col gap-4xs">
-            {tender.urgency && tender.urgencyLabel && (
-              <Badge variant={urgencyToVariant(tender.urgency)}>
-                {tender.urgencyLabel}
-              </Badge>
-            )}
+            <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
             <DeadlineText deadline={tender.deadline} />
           </div>
         </Field>
@@ -250,46 +248,10 @@ function SidebarSection({
   };
 
   const handleVote = (type: "yes" | "neutral" | "no") => {
-    const nextQualification = { ...qualification };
-    let nextSelectedVote: "yes" | "neutral" | "no" | null = selectedVote;
-
-    if (selectedVote === type) {
-      if (type === "yes") {
-        nextQualification.votesYes = Math.max(0, nextQualification.votesYes - 1);
-      } else if (type === "neutral") {
-        nextQualification.votesNeutral = Math.max(
-          0,
-          nextQualification.votesNeutral - 1,
-        );
-      } else {
-        nextQualification.votesNo = Math.max(0, nextQualification.votesNo - 1);
-      }
-      nextSelectedVote = null;
-    } else {
-      if (selectedVote === "yes") {
-        nextQualification.votesYes = Math.max(0, nextQualification.votesYes - 1);
-      } else if (selectedVote === "neutral") {
-        nextQualification.votesNeutral = Math.max(
-          0,
-          nextQualification.votesNeutral - 1,
-        );
-      } else if (selectedVote === "no") {
-        nextQualification.votesNo = Math.max(0, nextQualification.votesNo - 1);
-      }
-
-      if (type === "yes") {
-        nextQualification.votesYes += 1;
-      } else if (type === "neutral") {
-        nextQualification.votesNeutral += 1;
-      } else {
-        nextQualification.votesNo += 1;
-      }
-      nextSelectedVote = type;
-    }
-
-    setQualification(nextQualification);
-    setSelectedVote(nextSelectedVote);
-    onUpdate({ qualification: nextQualification });
+    const result = applyVote(qualification, selectedVote, type);
+    setQualification(result.qualification);
+    setSelectedVote(result.selectedVote);
+    onUpdate({ qualification: result.qualification });
   };
 
   return (
@@ -553,7 +515,7 @@ function VoteBadges({
         type="button"
         onClick={() => onVote("yes")}
         aria-label="Positiv abstimmen"
-        className="inline-flex items-center gap-4xs rounded-pill border border-scoring-high bg-status-success-bg px-3xs py-[2px] text-badge text-text-primary"
+        className="inline-flex items-center gap-4xs rounded-container border border-scoring-high bg-status-success-bg px-3xs py-[2px] text-badge text-text-primary"
       >
         <ThumbsUp {...withIconClass("text-scoring-high")} size={12} />
         {qualification.votesYes}
@@ -569,7 +531,7 @@ function VoteBadges({
         type="button"
         onClick={() => onVote("neutral")}
         aria-label="Neutral abstimmen"
-        className="inline-flex items-center gap-4xs rounded-pill border border-border-dark bg-bg-light px-3xs py-[2px] text-badge text-text-primary"
+        className="inline-flex items-center gap-4xs rounded-container border border-border-dark bg-bg-light px-3xs py-[2px] text-badge text-text-primary"
       >
         <span>-</span>
         {qualification.votesNeutral}
@@ -585,7 +547,7 @@ function VoteBadges({
         type="button"
         onClick={() => onVote("no")}
         aria-label="Negativ abstimmen"
-        className="inline-flex items-center gap-4xs rounded-pill border border-scoring-low bg-status-rejected-bg px-3xs py-[2px] text-badge text-text-primary"
+        className="inline-flex items-center gap-4xs rounded-container border border-scoring-low bg-status-rejected-bg px-3xs py-[2px] text-badge text-text-primary"
       >
         <ThumbsDown {...withIconClass("text-scoring-low")} size={12} />
         {qualification.votesNo}

@@ -18,7 +18,7 @@ export function ActiveFilterTags({
 
   return (
     <div className="flex flex-wrap items-center gap-3xs">
-      <span className="inline-flex items-center gap-4xs rounded-pill border border-border-light bg-bg-light py-4xs pl-2xs pr-3xs text-table text-text-primary">
+      <span className="inline-flex items-center gap-4xs rounded-container border border-border-light bg-bg-light py-4xs pl-2xs pr-3xs text-table text-text-primary">
         <span className="text-text-secondary">Projekt Owner</span>
         <Avatar initials={ownerFilter.initials} color={ownerFilter.color} size={16} />
         <span>{ownerFilter.name}</span>

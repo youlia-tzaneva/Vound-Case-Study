@@ -22,6 +22,7 @@ import type {
   TenderListItem,
   TenderOwner,
   TenderPanelView,
+  TenderQualification,
   TenderSidebarUpdates,
 } from "../types/tender";
 import { ensureSelectColumnFirst, type TableColumnId } from "../data/tableColumns";
@@ -181,6 +182,13 @@ export function SavedTendersPage() {
     [handleTenderUpdate],
   );
 
+  const handleQualificationChange = useCallback(
+    (tenderId: string, qualification: TenderQualification) => {
+      handleTenderUpdate(tenderId, { qualification });
+    },
+    [handleTenderUpdate],
+  );
+
   return (
     <div className="flex h-screen overflow-hidden bg-bg-base">
       <AppSidebar />
@@ -214,6 +222,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onQualificationChange={handleQualificationChange}
             />
           ) : isUrgentView ? (
             <UrgentTendersTable
@@ -221,6 +230,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onQualificationChange={handleQualificationChange}
             />
           ) : isTeamView ? (
             <TeamTendersTable
@@ -237,6 +247,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
+              onQualificationChange={handleQualificationChange}
             />
           ) : (
             <TendersTable
@@ -244,6 +255,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onQualificationChange={handleQualificationChange}
             />
           )}
         </div>

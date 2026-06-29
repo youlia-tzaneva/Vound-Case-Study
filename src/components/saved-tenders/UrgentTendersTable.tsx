@@ -1,15 +1,17 @@
 import { useState } from "react";
 import {
   Badge,
+  getVariantTextClass,
   statusToVariant,
   urgentReasonToVariant,
-  urgencyToVariant,
 } from "../ui/Badge";
+import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { UrgentTender, TenderOwner } from "../../types/tender";
 import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
+import { QualificationCell } from "./QualificationCell";
 import { getTdClass, thClass } from "./tableStyles";
 
 interface UrgentTendersTableProps {
@@ -17,6 +19,10 @@ interface UrgentTendersTableProps {
   activeTenderId?: string | null;
   onTenderOpen: (tender: UrgentTender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onQualificationChange?: (
+    tenderId: string,
+    qualification: UrgentTender["qualification"],
+  ) => void;
 }
 
 export function UrgentTendersTable({
@@ -24,6 +30,7 @@ export function UrgentTendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
+  onQualificationChange,
 }: UrgentTendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -64,6 +71,9 @@ export function UrgentTendersTable({
               isActive={activeTenderId === tender.id}
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onQualificationChange={(qualification) =>
+                onQualificationChange?.(tender.id, qualification)
+              }
             />
           ))}
         </tbody>
@@ -77,11 +87,15 @@ function UrgentTenderRow({
   isActive,
   onOpen,
   onOwnerChange,
+  onQualificationChange,
 }: {
   tender: UrgentTender;
   isActive: boolean;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onQualificationChange?: (
+    qualification: UrgentTender["qualification"],
+  ) => void;
 }) {
   const [selected, setSelected] = useState(false);
   const isHighlighted = selected || isActive;
@@ -114,11 +128,7 @@ function UrgentTenderRow({
       </td>
       <td className={cellClass()}>
         <div className="flex flex-col gap-3xs">
-          {tender.urgency && tender.urgencyLabel && (
-            <Badge variant={urgencyToVariant(tender.urgency)}>
-              {tender.urgencyLabel}
-            </Badge>
-          )}
+          <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
           <DeadlineText deadline={tender.deadline} />
         </div>
       </td>
@@ -137,7 +147,11 @@ function UrgentTenderRow({
         />
       </td>
       <td className={cellClass("border-r-0")}>
-        <QualificationCell qualification={tender.qualification} />
+        <QualificationCell
+          tenderId={tender.id}
+          qualification={tender.qualification}
+          onQualificationChange={onQualificationChange}
+        />
       </td>
     </tr>
   );
@@ -146,9 +160,11 @@ function UrgentTenderRow({
 function UrgentReasonCell({ reason }: { reason: UrgentTender["urgentReason"] }) {
   return (
     <div className="flex flex-col gap-3xs">
-      <Badge variant={urgentReasonToVariant(reason)}>
+      <span
+        className={`text-table ${getVariantTextClass(urgentReasonToVariant(reason))}`}
+      >
         {urgentReasonLabels[reason]}
-      </Badge>
+      </span>
       {reason === "neues-dokument" && <TextLink>Dokument anzeigen</TextLink>}
     </div>
   );
@@ -163,35 +179,6 @@ function DeadlineText({ deadline }: { deadline: string }) {
       <span className="text-border-dark"> | </span>
       {time}
     </span>
-  );
-}
-
-function QualificationCell({
-  qualification,
-}: {
-  qualification: UrgentTender["qualification"];
-}) {
-  return (
-    <div className="flex flex-col gap-3xs whitespace-nowrap">
-      <div className="flex items-center justify-between gap-xs">
-        <span>Votes:</span>
-        <span>
-          <span className="text-scoring-high">{qualification.votesYes}</span>
-          {" / "}
-          {qualification.votesNeutral}
-          {" / "}
-          <span className="text-scoring-low">{qualification.votesNo}</span>
-        </span>
-      </div>
-      <div className="flex items-center justify-between gap-xs">
-        <span>Relevanz-Score:</span>
-        <span>{qualification.relevanzScore}</span>
-      </div>
-      <div className="flex items-center justify-between gap-xs">
-        <span>Komplexität-Score:</span>
-        <span>{qualification.komplexitaetScore}</span>
-      </div>
-    </div>
   );
 }
 

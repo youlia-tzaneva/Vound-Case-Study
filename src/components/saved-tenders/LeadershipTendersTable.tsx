@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Badge, statusToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Checkbox } from "../ui/Checkbox";
@@ -7,9 +6,10 @@ import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import { TeamCell } from "./TeamCell";
+import type { TableSelectionProps } from "./SelectableTableShell";
 import { getTdClass, thClass } from "./tableStyles";
 
-interface LeadershipTendersTableProps {
+interface LeadershipTendersTableProps extends TableSelectionProps {
   tenders: LeadershipTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: LeadershipTender) => void;
@@ -28,6 +28,8 @@ export function LeadershipTendersTable({
   onOwnerChange,
   onTeamChange,
   onQualificationChange,
+  isRowSelected,
+  onRowSelectedChange,
 }: LeadershipTendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -66,6 +68,10 @@ export function LeadershipTendersTable({
               key={tender.id}
               tender={tender}
               isActive={activeTenderId === tender.id}
+              isSelected={isRowSelected(tender.id)}
+              onSelectedChange={(checked) =>
+                onRowSelectedChange(tender.id, checked)
+              }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
               onTeamChange={(team) => onTeamChange(tender.id, team)}
@@ -83,6 +89,8 @@ export function LeadershipTendersTable({
 function LeadershipTenderRow({
   tender,
   isActive,
+  isSelected,
+  onSelectedChange,
   onOpen,
   onOwnerChange,
   onTeamChange,
@@ -90,6 +98,8 @@ function LeadershipTenderRow({
 }: {
   tender: LeadershipTender;
   isActive: boolean;
+  isSelected: boolean;
+  onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
   onTeamChange: (team: string) => void;
@@ -97,8 +107,7 @@ function LeadershipTenderRow({
     qualification: LeadershipTender["qualification"],
   ) => void;
 }) {
-  const [selected, setSelected] = useState(false);
-  const isHighlighted = selected || isActive;
+  const isHighlighted = isSelected || isActive;
   const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
 
   return (
@@ -108,8 +117,8 @@ function LeadershipTenderRow({
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
-          checked={selected}
-          onChange={setSelected}
+          checked={isSelected}
+          onChange={onSelectedChange}
           label={`${tender.name} auswählen`}
         />
       </td>

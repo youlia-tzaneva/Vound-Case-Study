@@ -17,22 +17,23 @@ export function Checkbox({
   const Icon = checked ? SquareCheck : Square;
 
   return (
-    <label
-      className={`inline-flex items-center ${disabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+    <button
+      type="button"
+      role="checkbox"
+      aria-checked={checked}
+      aria-label={label ?? "Zeile auswählen"}
+      disabled={disabled}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() => onChange?.(!checked)}
+      className={`inline-flex items-center border-0 bg-transparent p-0 ${
+        disabled ? "cursor-not-allowed" : "cursor-pointer"
+      }`}
     >
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={disabled}
-        onChange={(event) => onChange?.(event.target.checked)}
-        className="sr-only"
-        aria-label={label ?? "Zeile auswählen"}
-      />
       <Icon
         {...withIconClass(
           checked ? "text-icon-selected" : disabled ? "text-icon-disabled" : undefined,
         )}
       />
-    </label>
+    </button>
   );
 }

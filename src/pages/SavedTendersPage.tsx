@@ -1,8 +1,9 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AppSidebar } from "../components/layout/AppSidebar";
 import { SavedViewsBar } from "../components/saved-tenders/SavedViewsBar";
 import { SavedTendersToolbar } from "../components/saved-tenders/SavedTendersToolbar";
 import { ActiveFilterTags } from "../components/saved-tenders/ActiveFilterTags";
+import { BulkSelectionActionBar } from "../components/saved-tenders/BulkSelectionActionBar";
 import { CustomTendersTable } from "../components/saved-tenders/CustomTendersTable";
 import { TendersTable } from "../components/saved-tenders/TendersTable";
 import { UrgentTendersTable } from "../components/saved-tenders/UrgentTendersTable";
@@ -21,12 +22,18 @@ import { toTenderPanelView } from "../data/tenderPanelDetails";
 import type {
   TenderListItem,
   TenderOwner,
+  TenderPanelUpdate,
   TenderPanelView,
   TenderQualification,
   TenderSidebarUpdates,
 } from "../types/tender";
 import { ensureSelectColumnFirst, type TableColumnId } from "../data/tableColumns";
 import { mapTenderList } from "../utils/applyTenderSidebarUpdates";
+import {
+  markTenderUpdatesRead,
+  markTenderUpdatesUnread,
+} from "../utils/bulkTenderActions";
+import { useTenderRowSelection } from "../hooks/useTenderRowSelection";
 
 function filterTendersByView(
   tenders: typeof initialTenders,
@@ -87,6 +94,111 @@ export function SavedTendersPage() {
   const filteredLeadershipTenders = leadershipTenders
     .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
     .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter));
+
+  const activeTenderIds = useMemo(() => {
+    if (isCustomView || (!isUrgentView && !isTeamView && !isLeadershipView)) {
+      return filteredTenders.map((tender) => tender.id);
+    }
+    if (isUrgentView) {
+      return filteredUrgentTenders.map((tender) => tender.id);
+    }
+    if (isTeamView) {
+      return filteredTeamTenders.map((tender) => tender.id);
+    }
+    return filteredLeadershipTenders.map((tender) => tender.id);
+  }, [
+    isCustomView,
+    isUrgentView,
+    isTeamView,
+    isLeadershipView,
+    filteredTenders,
+    filteredUrgentTenders,
+    filteredTeamTenders,
+    filteredLeadershipTenders,
+  ]);
+
+  const {
+    selectedIds,
+    hasSelection,
+    allSelected,
+    someSelected,
+    isSelected,
+    toggleRow,
+    selectAll,
+    selectNone,
+    toggleAll,
+  } = useTenderRowSelection(activeTenderIds);
+  const selectedIdList = useMemo(() => [...selectedIds], [selectedIds]);
+  const tableScrollRef = useRef<HTMLDivElement>(null);
+  const preservedScrollTopRef = useRef<number | null>(null);
+  const bulkMarkReadStateRef = useRef<{
+    affectedIds: string[];
+    panelUpdatesSnapshot: TenderPanelUpdate[] | null;
+    panelTenderId: string | null;
+  } | null>(null);
+  const tendersRef = useRef(tenders);
+  const urgentTendersRef = useRef(urgentTenders);
+  const teamTendersRef = useRef(teamTenders);
+  const leadershipTendersRef = useRef(leadershipTenders);
+  const panelTenderRef = useRef(panelTender);
+
+  tendersRef.current = tenders;
+  urgentTendersRef.current = urgentTenders;
+  teamTendersRef.current = teamTenders;
+  leadershipTendersRef.current = leadershipTenders;
+  panelTenderRef.current = panelTender;
+
+  const preserveTableScroll = useCallback(() => {
+    if (tableScrollRef.current) {
+      preservedScrollTopRef.current = tableScrollRef.current.scrollTop;
+    }
+  }, []);
+
+  const handleRowSelectedChange = useCallback(
+    (id: string, checked: boolean) => {
+      preserveTableScroll();
+      toggleRow(id, checked);
+    },
+    [preserveTableScroll, toggleRow],
+  );
+
+  const handleSelectAll = useCallback(() => {
+    preserveTableScroll();
+    selectAll();
+  }, [preserveTableScroll, selectAll]);
+
+  const handleSelectNone = useCallback(() => {
+    preserveTableScroll();
+    selectNone();
+  }, [preserveTableScroll, selectNone]);
+
+  const handleToggleAll = useCallback(() => {
+    preserveTableScroll();
+    toggleAll();
+  }, [preserveTableScroll, toggleAll]);
+
+  useLayoutEffect(() => {
+    const scrollContainer = tableScrollRef.current;
+    const preservedScrollTop = preservedScrollTopRef.current;
+
+    if (scrollContainer && preservedScrollTop !== null) {
+      scrollContainer.scrollTop = preservedScrollTop;
+      preservedScrollTopRef.current = null;
+    }
+  }, [hasSelection, selectedIds]);
+
+  useEffect(() => {
+    selectNone();
+    tableScrollRef.current?.scrollTo({ top: 0 });
+  }, [activeViewId, selectNone]);
+
+  useEffect(() => {
+    bulkMarkReadStateRef.current = null;
+  }, [selectedIdList]);
+
+  useEffect(() => {
+    tableScrollRef.current?.scrollTo({ top: 0 });
+  }, [searchTerm, ownerFilter]);
 
   const handleViewSelect = (id: string) => {
     setIsPanelOpen(false);
@@ -189,32 +301,188 @@ export function SavedTendersPage() {
     [handleTenderUpdate],
   );
 
+  const handleBulkOwnerChange = useCallback(
+    (tenderIds: string[], owner: TenderOwner) => {
+      tenderIds.forEach((tenderId) => handleOwnerChange(tenderId, owner));
+    },
+    [handleOwnerChange],
+  );
+
+  const handleBulkTeamChange = useCallback(
+    (tenderIds: string[], team: string) => {
+      tenderIds.forEach((tenderId) => handleTeamChange(tenderId, team));
+    },
+    [handleTeamChange],
+  );
+
+  const handleBulkMarkUpdatesReadChange = useCallback(
+    (markAsRead: boolean, tenderIds: string[]) => {
+      if (markAsRead) {
+        const idSet = new Set(tenderIds);
+        const affectedIds = [
+          ...new Set(
+            [
+              ...tendersRef.current,
+              ...urgentTendersRef.current,
+              ...teamTendersRef.current,
+              ...leadershipTendersRef.current,
+            ]
+              .filter(
+                (tender) =>
+                  idSet.has(tender.id) &&
+                  "update" in tender &&
+                  tender.update?.isNew,
+              )
+              .map((tender) => tender.id),
+          ),
+        ];
+
+        setTenders((current) => markTenderUpdatesRead(current, tenderIds).list);
+        setUrgentTenders((current) =>
+          markTenderUpdatesRead(current, tenderIds).list,
+        );
+        setTeamTenders((current) =>
+          markTenderUpdatesRead(current, tenderIds).list,
+        );
+        setLeadershipTenders((current) =>
+          markTenderUpdatesRead(current, tenderIds).list,
+        );
+
+        const openPanelTender = panelTenderRef.current;
+        let panelUpdatesSnapshot: TenderPanelUpdate[] | null = null;
+        let panelTenderId: string | null = null;
+
+        if (openPanelTender && tenderIds.includes(openPanelTender.id)) {
+          panelUpdatesSnapshot = openPanelTender.updates.map((update) => ({
+            ...update,
+          }));
+          panelTenderId = openPanelTender.id;
+
+          setPanelTender({
+            ...openPanelTender,
+            updates: openPanelTender.updates.map((update) => ({
+              ...update,
+              isNew: false,
+            })),
+          });
+        }
+
+        bulkMarkReadStateRef.current = {
+          affectedIds,
+          panelUpdatesSnapshot,
+          panelTenderId,
+        };
+        return;
+      }
+
+      const bulkMarkReadState = bulkMarkReadStateRef.current;
+      if (!bulkMarkReadState) {
+        return;
+      }
+
+      const { affectedIds, panelUpdatesSnapshot, panelTenderId } =
+        bulkMarkReadState;
+
+      setTenders((current) => markTenderUpdatesUnread(current, affectedIds));
+      setUrgentTenders((current) =>
+        markTenderUpdatesUnread(current, affectedIds),
+      );
+      setTeamTenders((current) => markTenderUpdatesUnread(current, affectedIds));
+      setLeadershipTenders((current) =>
+        markTenderUpdatesUnread(current, affectedIds),
+      );
+      setPanelTender((current) => {
+        if (
+          !current ||
+          !panelTenderId ||
+          current.id !== panelTenderId ||
+          !panelUpdatesSnapshot
+        ) {
+          return current;
+        }
+
+        return {
+          ...current,
+          updates: panelUpdatesSnapshot,
+        };
+      });
+
+      bulkMarkReadStateRef.current = null;
+    },
+    [],
+  );
+
+  const runBulkAction = useCallback(
+    (action: () => void) => {
+      preserveTableScroll();
+      action();
+    },
+    [preserveTableScroll],
+  );
+
+  const tableSelectionProps = {
+    isRowSelected: isSelected,
+    onRowSelectedChange: handleRowSelectedChange,
+  };
+
   return (
     <div className="flex h-screen overflow-hidden bg-bg-base">
       <AppSidebar />
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col gap-xs overflow-hidden px-l py-s">
-        <h1 className="text-h2 text-text-primary">Projekte</h1>
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-l py-s">
+        <div className="flex shrink-0 flex-col gap-xs">
+          <h1 className="text-h2 text-text-primary">Projekte</h1>
 
-        <div className="flex w-full flex-col gap-3xs">
-          <SavedViewsBar
-            views={views}
-            onSelect={handleViewSelect}
-            onCreateWorkspace={handleCreateWorkspace}
-            onDeleteWorkspace={handleDeleteWorkspace}
-          />
-          <SavedTendersToolbar
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onOwnerFilterSelect={setOwnerFilter}
-          />
-          <ActiveFilterTags
-            ownerFilter={ownerFilter}
-            onRemoveOwnerFilter={() => setOwnerFilter(null)}
-          />
+          <div className="flex w-full flex-col gap-3xs">
+            <SavedViewsBar
+              views={views}
+              onSelect={handleViewSelect}
+              onCreateWorkspace={handleCreateWorkspace}
+              onDeleteWorkspace={handleDeleteWorkspace}
+            />
+            <SavedTendersToolbar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onOwnerFilterSelect={setOwnerFilter}
+            />
+            <ActiveFilterTags
+              ownerFilter={ownerFilter}
+              onRemoveOwnerFilter={() => setOwnerFilter(null)}
+            />
+          </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="relative mt-xs min-h-0 flex-1">
+          {hasSelection && (
+            <div className="absolute inset-x-0 top-0 z-10 bg-bg-base pb-xs">
+              <BulkSelectionActionBar
+                allSelected={allSelected}
+                someSelected={someSelected}
+                onSelectAll={handleSelectAll}
+                onSelectNone={handleSelectNone}
+                onToggleAll={handleToggleAll}
+                onOwnerChange={(owner) =>
+                  runBulkAction(() =>
+                    handleBulkOwnerChange(selectedIdList, owner),
+                  )
+                }
+                onTeamChange={(team) =>
+                  runBulkAction(() => handleBulkTeamChange(selectedIdList, team))
+                }
+                onMarkUpdatesReadChange={(markAsRead) =>
+                  runBulkAction(() =>
+                    handleBulkMarkUpdatesReadChange(markAsRead, selectedIdList),
+                  )
+                }
+                selectedIdsKey={selectedIdList.join(",")}
+              />
+            </div>
+          )}
+
+          <div
+            ref={tableScrollRef}
+            className="h-full overflow-y-auto [overflow-anchor:none]"
+          >
           {isCustomView ? (
             <CustomTendersTable
               tenders={filteredTenders}
@@ -223,6 +491,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onQualificationChange={handleQualificationChange}
+              {...tableSelectionProps}
             />
           ) : isUrgentView ? (
             <UrgentTendersTable
@@ -231,6 +500,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onQualificationChange={handleQualificationChange}
+              {...tableSelectionProps}
             />
           ) : isTeamView ? (
             <TeamTendersTable
@@ -239,6 +509,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
+              {...tableSelectionProps}
             />
           ) : isLeadershipView ? (
             <LeadershipTendersTable
@@ -248,6 +519,7 @@ export function SavedTendersPage() {
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
               onQualificationChange={handleQualificationChange}
+              {...tableSelectionProps}
             />
           ) : (
             <TendersTable
@@ -256,8 +528,10 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onQualificationChange={handleQualificationChange}
+              {...tableSelectionProps}
             />
           )}
+          </div>
         </div>
       </main>
 

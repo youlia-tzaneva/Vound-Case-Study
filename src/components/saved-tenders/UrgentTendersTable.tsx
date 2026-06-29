@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Badge,
   getVariantTextClass,
@@ -12,9 +11,10 @@ import type { UrgentTender, TenderOwner } from "../../types/tender";
 import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
+import type { TableSelectionProps } from "./SelectableTableShell";
 import { getTdClass, thClass } from "./tableStyles";
 
-interface UrgentTendersTableProps {
+interface UrgentTendersTableProps extends TableSelectionProps {
   tenders: UrgentTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: UrgentTender) => void;
@@ -31,6 +31,8 @@ export function UrgentTendersTable({
   onTenderOpen,
   onOwnerChange,
   onQualificationChange,
+  isRowSelected,
+  onRowSelectedChange,
 }: UrgentTendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -69,6 +71,10 @@ export function UrgentTendersTable({
               key={tender.id}
               tender={tender}
               isActive={activeTenderId === tender.id}
+              isSelected={isRowSelected(tender.id)}
+              onSelectedChange={(checked) =>
+                onRowSelectedChange(tender.id, checked)
+              }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
               onQualificationChange={(qualification) =>
@@ -85,20 +91,23 @@ export function UrgentTendersTable({
 function UrgentTenderRow({
   tender,
   isActive,
+  isSelected,
+  onSelectedChange,
   onOpen,
   onOwnerChange,
   onQualificationChange,
 }: {
   tender: UrgentTender;
   isActive: boolean;
+  isSelected: boolean;
+  onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
   onQualificationChange?: (
     qualification: UrgentTender["qualification"],
   ) => void;
 }) {
-  const [selected, setSelected] = useState(false);
-  const isHighlighted = selected || isActive;
+  const isHighlighted = isSelected || isActive;
   const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
 
   return (
@@ -108,8 +117,8 @@ function UrgentTenderRow({
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
-          checked={selected}
-          onChange={setSelected}
+          checked={isSelected}
+          onChange={onSelectedChange}
           label={`${tender.name} auswählen`}
         />
       </td>

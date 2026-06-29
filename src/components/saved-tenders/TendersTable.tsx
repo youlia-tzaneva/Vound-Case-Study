@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Badge, statusToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Avatar } from "../ui/Avatar";
@@ -8,9 +7,10 @@ import type { Tender, TenderOwner } from "../../types/tender";
 import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
+import type { TableSelectionProps } from "./SelectableTableShell";
 import { getTdClass, thClass } from "./tableStyles";
 
-interface TendersTableProps {
+interface TendersTableProps extends TableSelectionProps {
   tenders: Tender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
@@ -27,6 +27,8 @@ export function TendersTable({
   onTenderOpen,
   onOwnerChange,
   onQualificationChange,
+  isRowSelected,
+  onRowSelectedChange,
 }: TendersTableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-container border border-border-dark">
@@ -65,6 +67,10 @@ export function TendersTable({
               key={tender.id}
               tender={tender}
               isActive={activeTenderId === tender.id}
+              isSelected={isRowSelected(tender.id)}
+              onSelectedChange={(checked) =>
+                onRowSelectedChange(tender.id, checked)
+              }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
               onQualificationChange={(qualification) =>
@@ -81,18 +87,21 @@ export function TendersTable({
 function TenderRow({
   tender,
   isActive,
+  isSelected,
+  onSelectedChange,
   onOpen,
   onOwnerChange,
   onQualificationChange,
 }: {
   tender: Tender;
   isActive: boolean;
+  isSelected: boolean;
+  onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
   onQualificationChange?: (qualification: Tender["qualification"]) => void;
 }) {
-  const [selected, setSelected] = useState(false);
-  const isHighlighted = selected || isActive;
+  const isHighlighted = isSelected || isActive;
   const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
 
   return (
@@ -102,8 +111,8 @@ function TenderRow({
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
-          checked={selected}
-          onChange={setSelected}
+          checked={isSelected}
+          onChange={onSelectedChange}
           label={`${tender.name} auswählen`}
         />
       </td>

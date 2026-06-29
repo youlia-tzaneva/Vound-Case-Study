@@ -9,17 +9,23 @@ import {
 import type { TenderOwner } from "../../types/tender";
 import { withIconClass } from "../ui/iconProps";
 import { FilterDropdown } from "./FilterDropdown";
+import { SortDropdown } from "./SortDropdown";
+import type { TenderSortOption } from "../../utils/sortTenders";
 
 interface SavedTendersToolbarProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onOwnerFilterSelect: (owner: TenderOwner) => void;
+  sortBy: TenderSortOption | null;
+  onSortSelect: (sort: TenderSortOption) => void;
 }
 
 export function SavedTendersToolbar({
   searchQuery,
   onSearchChange,
   onOwnerFilterSelect,
+  sortBy,
+  onSortSelect,
 }: SavedTendersToolbarProps) {
   return (
     <div className="flex w-full items-center gap-m rounded-container border border-border-light bg-bg-containers px-xs py-3xs">
@@ -36,6 +42,8 @@ export function SavedTendersToolbar({
           className="min-w-0 flex-1 border-0 bg-transparent text-body text-text-secondary outline-none placeholder:text-text-secondary"
         />
       </div>
+
+      <SortDropdown sortBy={sortBy} onSortSelect={onSortSelect} />
 
       <button
         type="button"

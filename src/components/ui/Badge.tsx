@@ -5,6 +5,7 @@ type BadgeVariant =
   | "status-progress"
   | "status-submitted"
   | "status-success"
+  | "status-rejected"
   | "urgency-overdue"
   | "urgency-deadline";
 
@@ -29,6 +30,11 @@ const variantStyles: Record<
   "status-success": {
     bg: "bg-status-success-bg",
     text: "text-status-success-text",
+  },
+  "status-rejected": {
+    bg: "bg-status-rejected-bg",
+    text: "text-status-rejected-text",
+    fitContent: true,
   },
   "urgency-overdue": {
     bg: "bg-urgency-overdue-bg",
@@ -65,13 +71,27 @@ export function getVariantTextClass(variant: BadgeVariant): string {
 }
 
 export function statusToVariant(
-  status: "vorgemerkt" | "in-bearbeitung" | "abgegeben" | "gewonnen",
+  status:
+    | "vorgemerkt"
+    | "aussortiert"
+    | "teilnahmeantrag-in-bearbeitung"
+    | "teilnahmeantrag-abgegeben"
+    | "angebot-in-bearbeitung"
+    | "angebot-abgegeben"
+    | "gewonnen"
+    | "teilnahmeantrag-abgelehnt"
+    | "angebot-abgelehnt",
 ): BadgeVariant {
   const map = {
     vorgemerkt: "status-info",
-    "in-bearbeitung": "status-progress",
-    abgegeben: "status-submitted",
+    aussortiert: "status-rejected",
+    "teilnahmeantrag-in-bearbeitung": "status-progress",
+    "teilnahmeantrag-abgegeben": "status-submitted",
+    "angebot-in-bearbeitung": "status-progress",
+    "angebot-abgegeben": "status-submitted",
     gewonnen: "status-success",
+    "teilnahmeantrag-abgelehnt": "status-rejected",
+    "angebot-abgelehnt": "status-rejected",
   } as const;
 
   return map[status];

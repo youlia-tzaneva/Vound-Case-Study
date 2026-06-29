@@ -9,7 +9,7 @@ export const mockTeamTenders: TeamTender[] = [
     leistungsart:
       "Bauleistung, Generalunternehmerleistung, Objektplanung Gebäude",
     lp: "LPH 1-8",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     deadline: "26.06.2026 | 17:00",
     urgency: "overdue",
     urgencyLabel: "überfällig",
@@ -26,7 +26,7 @@ export const mockTeamTenders: TeamTender[] = [
     location: "Essen • Nordrhein-Westfalen",
     leistungsart: "Objektplanung Gebäude",
     lp: "LPH 1-2 (3-5 optional)",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     deadline: "14.08.2026 | 00:00",
     urgency: null,
     update: null,
@@ -53,7 +53,7 @@ export const mockTeamTenders: TeamTender[] = [
     location: "14513 Teltow • Brandenburg",
     leistungsart: "Objektplanung Gebäude",
     lp: "LPH 1-8",
-    status: "abgegeben",
+    status: "teilnahmeantrag-abgegeben",
     deadline: "16.08.2026 | 13:00",
     urgency: null,
     update: {
@@ -102,7 +102,7 @@ export const mockTeamTenders: TeamTender[] = [
     location: "Karlsruhe • Baden-Württemberg",
     leistungsart: "Objektplanung Gebäude",
     lp: "Unbekannt",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     deadline: "18.08.2026 | 10:00",
     urgency: null,
     update: null,
@@ -116,7 +116,7 @@ export const mockTeamTenders: TeamTender[] = [
     leistungsart:
       "Bauleistung, Generalunternehmerleistung, Objektplanung Gebäude",
     lp: "LPH 1-8",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     deadline: "09.09.2026 | 13:00",
     urgency: null,
     update: {

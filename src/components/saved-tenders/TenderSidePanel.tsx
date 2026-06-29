@@ -268,7 +268,12 @@ function SidebarSection({
             trigger={
               owner ? (
                 <>
-                  <Avatar initials={owner.initials} color={owner.color} />
+                  <Avatar
+                    name={owner.name}
+                    initials={owner.initials}
+                    color={owner.color}
+                    avatarUrl={owner.avatarUrl}
+                  />
                   <span className="min-w-0 flex-1 truncate text-body text-text-primary">
                     {owner.name}
                   </span>
@@ -288,7 +293,12 @@ function SidebarSection({
                   setOpenDropdown(null);
                 }}
               >
-                <Avatar initials={user.initials} color={user.color} />
+                <Avatar
+                  name={user.name}
+                  initials={user.initials}
+                  color={user.color}
+                  avatarUrl={user.avatarUrl}
+                />
                 <span className="min-w-0 flex-1 truncate text-body text-text-primary">
                   {user.name}
                 </span>
@@ -521,8 +531,10 @@ function VoteBadges({
         {qualification.votesYes}
         {selectedVote === "yes" && (
           <Avatar
+            name={currentUser.name}
             initials={currentUser.initials}
             color={currentUser.color}
+            avatarUrl={currentUser.avatarUrl}
             size={14}
           />
         )}
@@ -537,8 +549,10 @@ function VoteBadges({
         {qualification.votesNeutral}
         {selectedVote === "neutral" && (
           <Avatar
+            name={currentUser.name}
             initials={currentUser.initials}
             color={currentUser.color}
+            avatarUrl={currentUser.avatarUrl}
             size={14}
           />
         )}
@@ -553,8 +567,10 @@ function VoteBadges({
         {qualification.votesNo}
         {selectedVote === "no" && (
           <Avatar
+            name={currentUser.name}
             initials={currentUser.initials}
             color={currentUser.color}
+            avatarUrl={currentUser.avatarUrl}
             size={14}
           />
         )}
@@ -643,7 +659,12 @@ function CommentItem({
   return (
     <div className="flex flex-col gap-4xs">
       <div className="flex flex-wrap items-center gap-3xs">
-        <Avatar initials={comment.author.initials} color={comment.author.color} />
+        <Avatar
+          name={comment.author.name}
+          initials={comment.author.initials}
+          color={comment.author.color}
+          avatarUrl={comment.author.avatarUrl}
+        />
         <span className="text-body text-text-primary">{comment.author.name}</span>
         <span className="text-small text-text-secondary">{comment.timestamp}</span>
       </div>

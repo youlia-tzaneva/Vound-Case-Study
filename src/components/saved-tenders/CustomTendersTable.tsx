@@ -10,9 +10,11 @@ import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
+import type { StatusFilterProps } from "./StatusColumnHeader";
+import { StatusColumnHeader } from "./StatusColumnHeader";
 import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
-interface CustomTendersTableProps extends TableSelectionProps {
+interface CustomTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
   columns: TableColumnId[];
   activeTenderId?: string | null;
@@ -31,6 +33,8 @@ export function CustomTendersTable({
   onTenderOpen,
   onOwnerChange,
   onQualificationChange,
+  selectedStatuses,
+  onStatusToggle,
   isRowSelected,
   onRowSelectedChange,
 }: CustomTendersTableProps) {
@@ -50,6 +54,11 @@ export function CustomTendersTable({
               >
                 {columnId === "select" ? (
                   <span className="sr-only">{columnLabels.get(columnId)}</span>
+                ) : columnId === "status" ? (
+                  <StatusColumnHeader
+                    selectedStatuses={selectedStatuses}
+                    onStatusToggle={onStatusToggle}
+                  />
                 ) : (
                   columnLabels.get(columnId)
                 )}
@@ -252,7 +261,12 @@ function CommentsCell({ comment }: { comment: Tender["comment"] }) {
     <div className="flex flex-col gap-3xs">
       <div className="flex flex-col gap-4xs">
         <div className="flex items-center gap-3xs">
-          <Avatar initials={comment.author.initials} color={comment.author.color} />
+          <Avatar
+            name={comment.author.name}
+            initials={comment.author.initials}
+            color={comment.author.color}
+            avatarUrl={comment.author.avatarUrl}
+          />
           <span className="text-body text-text-primary">{comment.author.name}</span>
         </div>
         <p className="pl-[28px] text-small text-text-secondary">{comment.timestamp}</p>

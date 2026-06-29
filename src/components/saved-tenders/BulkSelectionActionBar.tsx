@@ -162,7 +162,12 @@ export function BulkSelectionActionBar({
                 }}
                 className="flex w-full items-center gap-4xs px-3xs py-4xs text-left hover:bg-bg-light"
               >
-                <Avatar initials={user.initials} color={user.color} />
+                <Avatar
+                  name={user.name}
+                  initials={user.initials}
+                  color={user.color}
+                  avatarUrl={user.avatarUrl}
+                />
                 <span className="min-w-0 flex-1 truncate text-table text-text-primary">
                   {user.name}
                 </span>

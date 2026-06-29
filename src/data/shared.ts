@@ -1,17 +1,39 @@
-import type { SavedView, Tender, TenderOwner, UrgentReasonType } from "../types/tender";
+import type { SavedView, TenderOwner, UrgentReasonType } from "../types/tender";
+import { USER_AVATAR_URLS } from "./userAvatars";
 
 export const currentUser: TenderOwner = {
   name: "Kat Schwarz",
   initials: "K",
   color: "#e77b54",
+  avatarUrl: USER_AVATAR_URLS["Kat Schwarz"],
 };
 
 export const panelUsers: TenderOwner[] = [
   currentUser,
-  { name: "John Smith", initials: "J", color: "#a472e4" },
-  { name: "Marie Volker", initials: "M", color: "#24922f" },
-  { name: "Max Waltz", initials: "M", color: "#e91418" },
-  { name: "Johan Stein", initials: "J", color: "#4f84ee" },
+  {
+    name: "John Smith",
+    initials: "J",
+    color: "#a472e4",
+    avatarUrl: USER_AVATAR_URLS["John Smith"],
+  },
+  {
+    name: "Marie Volker",
+    initials: "M",
+    color: "#24922f",
+    avatarUrl: USER_AVATAR_URLS["Marie Volker"],
+  },
+  {
+    name: "Max Waltz",
+    initials: "M",
+    color: "#e91418",
+    avatarUrl: USER_AVATAR_URLS["Max Waltz"],
+  },
+  {
+    name: "Johan Stein",
+    initials: "J",
+    color: "#4f84ee",
+    avatarUrl: USER_AVATAR_URLS["Johan Stein"],
+  },
 ];
 
 export const panelTeams = [
@@ -36,12 +58,7 @@ export const savedViews: SavedView[] = [
   { id: "leadership", label: "Führung" },
 ];
 
-export const statusLabels: Record<Tender["status"], string> = {
-  vorgemerkt: "Vorgemerkt",
-  "in-bearbeitung": "Teilnahmeantrag in bearbeitung",
-  abgegeben: "Teilnahmeantrag Abgegeben",
-  gewonnen: "Gewonnen",
-};
+export { allTenderStatuses, createDefaultStatusFilter, statusLabels } from "./statusFilter";
 
 export const urgentReasonLabels: Record<UrgentReasonType, string> = {
   "warten-auf-abstimmung": "Warten auf die abstimmung",

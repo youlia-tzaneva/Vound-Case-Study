@@ -1,5 +1,4 @@
 import type {
-  LeadershipTender,
   TeamTender,
   Tender,
   TenderComment,
@@ -8,6 +7,7 @@ import type {
   TenderPanelView,
   UrgentTender,
 } from "../types/tender";
+import { deriveUploadDate } from "../utils/deadline";
 
 const exemplarPanelDetails: Omit<
   TenderPanelView,
@@ -181,18 +181,6 @@ function deriveTeam(tender: TenderListItem, seed: number): string {
   }
 
   return pickFrom(["Hochbau", "Tiefbau", "Verkehr", "Generalplanung"], seed);
-}
-
-function deriveUploadDate(deadline: string): string {
-  const [datePart] = deadline.split(" | ");
-  const [day, month, year] = datePart.split(".");
-  const date = new Date(Number(year), Number(month) - 1, Number(day));
-  date.setDate(date.getDate() - 20);
-
-  const formattedDay = String(date.getDate()).padStart(2, "0");
-  const formattedMonth = String(date.getMonth() + 1).padStart(2, "0");
-
-  return `${formattedDay}.${formattedMonth}.${date.getFullYear()}`;
 }
 
 function buildUpdates(

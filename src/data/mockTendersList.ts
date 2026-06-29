@@ -31,7 +31,7 @@ export const mockTenders: Tender[] = [
     location: "Essen • Nordrhein-Westfalen",
     deadline: "14.08.2026 | 00:00",
     urgency: null,
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
     qualification: {
       votesYes: 4,
@@ -71,7 +71,7 @@ export const mockTenders: Tender[] = [
     location: "14513 Teltow • Brandenburg",
     deadline: "16.08.2026 | 13:00",
     urgency: null,
-    status: "abgegeben",
+    status: "teilnahmeantrag-abgegeben",
     owner: { name: "Marie Volker", initials: "M", color: "#24922f" },
     qualification: {
       votesYes: 2,
@@ -115,7 +115,7 @@ export const mockTenders: Tender[] = [
     deadline: "24.06.2026 | 16:00",
     urgency: "overdue",
     urgencyLabel: "überfällig",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     owner: { name: "John Smith", initials: "J", color: "#a472e4" },
     qualification: {
       votesYes: 1,
@@ -137,7 +137,7 @@ export const mockTenders: Tender[] = [
     location: "91522 Ansbach • Bayern",
     deadline: "31.07.2026 | 17:00",
     urgency: null,
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     owner: { name: "John Smith", initials: "J", color: "#a472e4" },
     qualification: {
       votesYes: 1,
@@ -184,7 +184,7 @@ export const mockTenders: Tender[] = [
     location: "Karlsruhe • Baden-Württemberg",
     deadline: "18.08.2026 | 10:00",
     urgency: null,
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
     qualification: {
       votesYes: 5,
@@ -202,7 +202,7 @@ export const mockTenders: Tender[] = [
     location: "Göttingen • Niedersachsen",
     deadline: "22.07.2026 | 14:00",
     urgency: null,
-    status: "abgegeben",
+    status: "teilnahmeantrag-abgegeben",
     owner: currentUser,
     qualification: {
       votesYes: 4,
@@ -271,7 +271,7 @@ export const mockTenders: Tender[] = [
     location: "Frankfurt am Main • Hessen",
     deadline: "09.09.2026 | 13:00",
     urgency: null,
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
     qualification: {
       votesYes: 3,
@@ -296,7 +296,7 @@ export const mockTenders: Tender[] = [
     location: "Dresden • Sachsen",
     deadline: "28.07.2026 | 15:00",
     urgency: null,
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
     qualification: {
       votesYes: 2,

@@ -25,7 +25,12 @@ export function ProjectOwnerCell({
         trigger={
           owner ? (
             <>
-              <Avatar initials={owner.initials} color={owner.color} />
+              <Avatar
+                name={owner.name}
+                initials={owner.initials}
+                color={owner.color}
+                avatarUrl={owner.avatarUrl}
+              />
               <span className="min-w-0 flex-1 whitespace-nowrap text-table text-text-primary">
                 {owner.name}
               </span>
@@ -44,7 +49,12 @@ export function ProjectOwnerCell({
               setIsOpen(false);
             }}
           >
-            <Avatar initials={user.initials} color={user.color} />
+            <Avatar
+              name={user.name}
+              initials={user.initials}
+              color={user.color}
+              avatarUrl={user.avatarUrl}
+            />
             <span className="min-w-0 flex-1 truncate text-table text-text-primary">
               {user.name}
             </span>

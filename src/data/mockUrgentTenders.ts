@@ -10,7 +10,7 @@ export const mockUrgentTenders: UrgentTender[] = [
     deadline: "24.06.2026 | 16:00",
     urgency: "overdue",
     urgencyLabel: "überfällig",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     update: {
       title: "Qualifikationsabstimmung seit 3 Tagen offen",
       isNew: true,
@@ -53,7 +53,7 @@ export const mockUrgentTenders: UrgentTender[] = [
     urgentReason: "neues-dokument",
     deadline: "12.07.2026 | 14:00",
     urgency: null,
-    status: "abgegeben",
+    status: "teilnahmeantrag-abgegeben",
     update: {
       title: "Leistungsverzeichnis Teil 3 hochgeladen",
       isNew: true,
@@ -115,7 +115,7 @@ export const mockUrgentTenders: UrgentTender[] = [
     deadline: "03.07.2026 | 17:00",
     urgency: "deadline-soon",
     urgencyLabel: "Noch 5 Tage",
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     update: {
       title: "Neue Frist nach Bieterinformation Nr. 4",
       isNew: true,
@@ -136,7 +136,7 @@ export const mockUrgentTenders: UrgentTender[] = [
     urgentReason: "neues-dokument",
     deadline: "31.07.2026 | 17:00",
     urgency: null,
-    status: "in-bearbeitung",
+    status: "teilnahmeantrag-in-bearbeitung",
     update: {
       title: "Planunterlagen Anlage B ergänzt",
       isNew: false,

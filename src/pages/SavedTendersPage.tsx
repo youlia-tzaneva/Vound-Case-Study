@@ -26,8 +26,13 @@ import type {
   TenderPanelView,
   TenderQualification,
   TenderSidebarUpdates,
+  TenderStatus,
 } from "../types/tender";
 import { ensureSelectColumnFirst, type TableColumnId } from "../data/tableColumns";
+import {
+  createDefaultStatusFilter,
+  matchesStatusFilter,
+} from "../data/statusFilter";
 import { tableScrollContainerClass } from "../components/saved-tenders/tableStyles";
 import { mapTenderList } from "../utils/applyTenderSidebarUpdates";
 import {
@@ -35,6 +40,8 @@ import {
   markTenderUpdatesUnread,
 } from "../utils/bulkTenderActions";
 import { useTenderRowSelection } from "../hooks/useTenderRowSelection";
+import type { TenderSortOption } from "../utils/sortTenders";
+import { sortTenderList } from "../utils/sortTenders";
 
 function filterTendersByView(
   tenders: typeof initialTenders,
@@ -70,6 +77,10 @@ export function SavedTendersPage() {
   const [panelTender, setPanelTender] = useState<TenderPanelView | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [ownerFilter, setOwnerFilter] = useState<TenderOwner | null>(null);
+  const [selectedStatuses, setSelectedStatuses] = useState(
+    createDefaultStatusFilter,
+  );
+  const [sortBy, setSortBy] = useState<TenderSortOption | null>(null);
 
   const activeView = views.find((view) => view.isActive);
   const activeViewId = activeView?.id ?? "all";
@@ -80,21 +91,37 @@ export function SavedTendersPage() {
   const isCustomView = Boolean(activeView?.isCustom && activeView.columns);
   const customColumns = ensureSelectColumnFirst(activeView?.columns ?? []);
 
-  const filteredTenders = filterTendersByView(tenders, activeViewId)
-    .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
-    .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter));
+  const filteredTenders = sortTenderList(
+    filterTendersByView(tenders, activeViewId)
+      .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
+      .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter))
+      .filter((tender) => matchesStatusFilter(tender.status, selectedStatuses)),
+    sortBy,
+  );
 
-  const filteredUrgentTenders = urgentTenders
-    .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
-    .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter));
+  const filteredUrgentTenders = sortTenderList(
+    urgentTenders
+      .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
+      .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter))
+      .filter((tender) => matchesStatusFilter(tender.status, selectedStatuses)),
+    sortBy,
+  );
 
-  const filteredTeamTenders = teamTenders
-    .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
-    .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter));
+  const filteredTeamTenders = sortTenderList(
+    teamTenders
+      .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
+      .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter))
+      .filter((tender) => matchesStatusFilter(tender.status, selectedStatuses)),
+    sortBy,
+  );
 
-  const filteredLeadershipTenders = leadershipTenders
-    .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
-    .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter));
+  const filteredLeadershipTenders = sortTenderList(
+    leadershipTenders
+      .filter((tender) => tender.name.toLowerCase().includes(searchTerm))
+      .filter((tender) => matchesOwnerFilter(tender.owner, ownerFilter))
+      .filter((tender) => matchesStatusFilter(tender.status, selectedStatuses)),
+    sortBy,
+  );
 
   const activeTenderIds = useMemo(() => {
     if (isCustomView || (!isUrgentView && !isTeamView && !isLeadershipView)) {
@@ -199,7 +226,7 @@ export function SavedTendersPage() {
 
   useEffect(() => {
     tableScrollRef.current?.scrollTo({ top: 0 });
-  }, [searchTerm, ownerFilter]);
+  }, [searchTerm, ownerFilter, selectedStatuses, sortBy]);
 
   const handleViewSelect = (id: string) => {
     setIsPanelOpen(false);
@@ -421,6 +448,23 @@ export function SavedTendersPage() {
     [preserveTableScroll],
   );
 
+  const handleStatusToggle = useCallback((status: TenderStatus) => {
+    setSelectedStatuses((current) => {
+      const next = new Set(current);
+      if (next.has(status)) {
+        next.delete(status);
+      } else {
+        next.add(status);
+      }
+      return next;
+    });
+  }, []);
+
+  const statusFilterProps = {
+    selectedStatuses,
+    onStatusToggle: handleStatusToggle,
+  };
+
   const tableSelectionProps = {
     isRowSelected: isSelected,
     onRowSelectedChange: handleRowSelectedChange,
@@ -445,6 +489,8 @@ export function SavedTendersPage() {
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
               onOwnerFilterSelect={setOwnerFilter}
+              sortBy={sortBy}
+              onSortSelect={setSortBy}
             />
             <ActiveFilterTags
               ownerFilter={ownerFilter}
@@ -490,6 +536,7 @@ export function SavedTendersPage() {
               onOwnerChange={handleOwnerChange}
               onQualificationChange={handleQualificationChange}
               {...tableSelectionProps}
+              {...statusFilterProps}
             />
           ) : isUrgentView ? (
             <UrgentTendersTable
@@ -499,6 +546,7 @@ export function SavedTendersPage() {
               onOwnerChange={handleOwnerChange}
               onQualificationChange={handleQualificationChange}
               {...tableSelectionProps}
+              {...statusFilterProps}
             />
           ) : isTeamView ? (
             <TeamTendersTable
@@ -508,6 +556,7 @@ export function SavedTendersPage() {
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
               {...tableSelectionProps}
+              {...statusFilterProps}
             />
           ) : isLeadershipView ? (
             <LeadershipTendersTable
@@ -518,6 +567,7 @@ export function SavedTendersPage() {
               onTeamChange={handleTeamChange}
               onQualificationChange={handleQualificationChange}
               {...tableSelectionProps}
+              {...statusFilterProps}
             />
           ) : (
             <TendersTable
@@ -527,6 +577,7 @@ export function SavedTendersPage() {
               onOwnerChange={handleOwnerChange}
               onQualificationChange={handleQualificationChange}
               {...tableSelectionProps}
+              {...statusFilterProps}
             />
           )}
           </div>

@@ -2,9 +2,14 @@ import type { TableColumnId } from "../data/tableColumns";
 
 export type TenderStatus =
   | "vorgemerkt"
-  | "in-bearbeitung"
-  | "abgegeben"
-  | "gewonnen";
+  | "aussortiert"
+  | "teilnahmeantrag-in-bearbeitung"
+  | "teilnahmeantrag-abgegeben"
+  | "angebot-in-bearbeitung"
+  | "angebot-abgegeben"
+  | "gewonnen"
+  | "teilnahmeantrag-abgelehnt"
+  | "angebot-abgelehnt";
 
 export type UrgencyType = "overdue" | "deadline-soon" | null;
 
@@ -12,6 +17,7 @@ export interface TenderOwner {
   name: string;
   initials: string;
   color: string;
+  avatarUrl?: string;
 }
 
 export interface TenderQualification {

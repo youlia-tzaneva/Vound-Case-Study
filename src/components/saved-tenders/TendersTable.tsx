@@ -8,9 +8,11 @@ import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
+import type { StatusFilterProps } from "./StatusColumnHeader";
+import { StatusColumnHeader } from "./StatusColumnHeader";
 import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
-interface TendersTableProps extends TableSelectionProps {
+interface TendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
@@ -27,6 +29,8 @@ export function TendersTable({
   onTenderOpen,
   onOwnerChange,
   onQualificationChange,
+  selectedStatuses,
+  onStatusToggle,
   isRowSelected,
   onRowSelectedChange,
 }: TendersTableProps) {
@@ -45,7 +49,10 @@ export function TendersTable({
               Abgabefrist
             </th>
             <th scope="col" className={`${thClass} w-[176px]`}>
-              Status
+              <StatusColumnHeader
+                selectedStatuses={selectedStatuses}
+                onStatusToggle={onStatusToggle}
+              />
             </th>
             <th scope="col" className={`${thClass} w-[168px]`}>
               Projekt Owner
@@ -204,8 +211,10 @@ function CommentsCell({ comment }: { comment: Tender["comment"] }) {
       <div className="flex flex-col gap-4xs">
         <div className="flex items-center gap-3xs">
           <Avatar
+            name={comment.author.name}
             initials={comment.author.initials}
             color={comment.author.color}
+            avatarUrl={comment.author.avatarUrl}
           />
           <span className="text-body text-text-primary">
             {comment.author.name}

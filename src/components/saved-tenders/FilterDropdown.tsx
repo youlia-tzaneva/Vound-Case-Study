@@ -135,8 +135,10 @@ export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
                             className="flex w-full items-center gap-4xs px-3xs py-4xs text-left hover:bg-bg-light"
                           >
                             <Avatar
+                              name={owner.name}
                               initials={owner.initials}
                               color={owner.color}
+                              avatarUrl={owner.avatarUrl}
                             />
                             <span className="whitespace-nowrap text-table text-text-primary">
                               {owner.name}

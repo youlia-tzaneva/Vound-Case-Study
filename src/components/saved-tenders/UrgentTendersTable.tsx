@@ -12,9 +12,11 @@ import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
+import type { StatusFilterProps } from "./StatusColumnHeader";
+import { StatusColumnHeader } from "./StatusColumnHeader";
 import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
-interface UrgentTendersTableProps extends TableSelectionProps {
+interface UrgentTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: UrgentTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: UrgentTender) => void;
@@ -31,6 +33,8 @@ export function UrgentTendersTable({
   onTenderOpen,
   onOwnerChange,
   onQualificationChange,
+  selectedStatuses,
+  onStatusToggle,
   isRowSelected,
   onRowSelectedChange,
 }: UrgentTendersTableProps) {
@@ -52,7 +56,10 @@ export function UrgentTendersTable({
               Abgabefrist
             </th>
             <th scope="col" className={`${thClass} w-[176px]`}>
-              Status
+              <StatusColumnHeader
+                selectedStatuses={selectedStatuses}
+                onStatusToggle={onStatusToggle}
+              />
             </th>
             <th scope="col" className={`${thClass} w-[182px]`}>
               Aktualisierungen

@@ -7,9 +7,11 @@ import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import { TeamCell } from "./TeamCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
+import type { StatusFilterProps } from "./StatusColumnHeader";
+import { StatusColumnHeader } from "./StatusColumnHeader";
 import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
-interface LeadershipTendersTableProps extends TableSelectionProps {
+interface LeadershipTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: LeadershipTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: LeadershipTender) => void;
@@ -28,6 +30,8 @@ export function LeadershipTendersTable({
   onOwnerChange,
   onTeamChange,
   onQualificationChange,
+  selectedStatuses,
+  onStatusToggle,
   isRowSelected,
   onRowSelectedChange,
 }: LeadershipTendersTableProps) {
@@ -43,7 +47,10 @@ export function LeadershipTendersTable({
               Name
             </th>
             <th scope="col" className={`${thClass} w-[176px]`}>
-              Status
+              <StatusColumnHeader
+                selectedStatuses={selectedStatuses}
+                onStatusToggle={onStatusToggle}
+              />
             </th>
             <th scope="col" className={`${thClass} w-[136px]`}>
               Abgabefrist

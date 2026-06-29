@@ -10,21 +10,21 @@ export function DeadlineUrgencyText({
   deadline,
   urgency,
 }: DeadlineUrgencyTextProps) {
-  if (!urgency) {
-    return null;
-  }
+  const daysLeft = getDaysUntilDeadline(deadline);
 
-  if (urgency === "overdue") {
+  if (daysLeft < 0) {
     return (
       <span className="text-table text-urgency-overdue-text">Überfällig</span>
     );
   }
 
-  const daysLeft = getDaysUntilDeadline(deadline);
+  if (urgency === "deadline-soon") {
+    return (
+      <span className="text-table text-urgency-deadline-text">
+        Noch {daysLeft} Tage
+      </span>
+    );
+  }
 
-  return (
-    <span className="text-table text-urgency-deadline-text">
-      Noch {daysLeft} Tage
-    </span>
-  );
+  return null;
 }

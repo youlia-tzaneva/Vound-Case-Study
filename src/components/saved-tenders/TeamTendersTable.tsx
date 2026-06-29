@@ -7,7 +7,7 @@ import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { TeamCell } from "./TeamCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
-import { getTdClass, thClass } from "./tableStyles";
+import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface TeamTendersTableProps extends TableSelectionProps {
   tenders: TeamTender[];
@@ -27,8 +27,8 @@ export function TeamTendersTable({
   onRowSelectedChange,
 }: TeamTendersTableProps) {
   return (
-    <div className="w-full rounded-container border border-border-dark">
-      <table className="w-full table-fixed border-collapse">
+    <div className={tableWrapperClass}>
+      <table className={`${tableClass} table-fixed`}>
         <thead>
           <tr>
             <th scope="col" className={`${thClass} w-[52px]`}>

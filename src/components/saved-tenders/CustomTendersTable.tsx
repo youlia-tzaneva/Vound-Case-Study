@@ -10,7 +10,7 @@ import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
-import { getTdClass, thClass } from "./tableStyles";
+import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface CustomTendersTableProps extends TableSelectionProps {
   tenders: Tender[];
@@ -38,8 +38,8 @@ export function CustomTendersTable({
   const columnLabels = new Map(allTableColumns.map((column) => [column.id, column.label]));
 
   return (
-    <div className="w-full overflow-x-auto rounded-container border border-border-dark">
-      <table className="w-full min-w-[900px] border-collapse">
+    <div className={tableWrapperClass}>
+      <table className={`${tableClass} min-w-[900px]`}>
         <thead>
           <tr>
             {orderedColumns.map((columnId, index) => (

@@ -8,7 +8,7 @@ import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
-import { getTdClass, thClass } from "./tableStyles";
+import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface TendersTableProps extends TableSelectionProps {
   tenders: Tender[];
@@ -31,8 +31,8 @@ export function TendersTable({
   onRowSelectedChange,
 }: TendersTableProps) {
   return (
-    <div className="w-full overflow-x-auto rounded-container border border-border-dark">
-      <table className="w-full min-w-[1100px] border-collapse">
+    <div className={tableWrapperClass}>
+      <table className={`${tableClass} min-w-[1100px]`}>
         <thead>
           <tr>
             <th scope="col" className={`${thClass} w-[52px]`}>

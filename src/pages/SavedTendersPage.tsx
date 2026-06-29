@@ -28,6 +28,7 @@ import type {
   TenderSidebarUpdates,
 } from "../types/tender";
 import { ensureSelectColumnFirst, type TableColumnId } from "../data/tableColumns";
+import { tableScrollContainerClass } from "../components/saved-tenders/tableStyles";
 import { mapTenderList } from "../utils/applyTenderSidebarUpdates";
 import {
   markTenderUpdatesRead,
@@ -452,7 +453,7 @@ export function SavedTendersPage() {
           </div>
         </div>
 
-        <div className="relative mt-xs min-h-0 flex-1">
+        <div className="relative mt-xs flex min-h-0 flex-1 flex-col">
           {hasSelection && (
             <div className="absolute inset-x-0 top-0 z-10 bg-bg-base pb-xs">
               <BulkSelectionActionBar
@@ -479,10 +480,7 @@ export function SavedTendersPage() {
             </div>
           )}
 
-          <div
-            ref={tableScrollRef}
-            className="h-full overflow-y-auto [overflow-anchor:none]"
-          >
+          <div ref={tableScrollRef} className={tableScrollContainerClass}>
           {isCustomView ? (
             <CustomTendersTable
               tenders={filteredTenders}

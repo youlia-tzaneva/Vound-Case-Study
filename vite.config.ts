@@ -4,5 +4,6 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: '/vound-case-study/', // 👈 ADD THIS LINE (use your exact repo name)
+  // Must match the GitHub repo name exactly (case-sensitive in URLs).
+  base: "/Vound-Case-Study/",
 });

@@ -23,6 +23,14 @@ function applySidebarUpdates<
     next.qualification = updates.qualification;
   }
 
+  if (updates.status !== undefined) {
+    next.status = updates.status;
+  }
+
+  if (updates.decision !== undefined && "decision" in next) {
+    next.decision = updates.decision;
+  }
+
   return next;
 }
 

@@ -11,7 +11,8 @@ export type TableColumnId =
   | "service-type"
   | "lp"
   | "team"
-  | "volume";
+  | "volume"
+  | "decision";
 
 export interface TableColumnDefinition {
   id: TableColumnId;
@@ -32,12 +33,15 @@ export const allTableColumns: TableColumnDefinition[] = [
   { id: "lp", label: "LP" },
   { id: "team", label: "Team" },
   { id: "volume", label: "Volumen" },
+  { id: "decision", label: "Entscheidung" },
 ];
 
 export const defaultTableColumnOrder = allTableColumns.map((column) => column.id);
 
 export function ensureSelectColumnFirst(columns: TableColumnId[]): TableColumnId[] {
-  const rest = columns.filter((column) => column !== "select" && column !== "name");
+  const rest = columns.filter(
+    (column) => column !== "select" && column !== "name" && column !== "decision",
+  );
 
-  return ["select", "name", ...rest];
+  return ["select", "name", ...rest, "decision"];
 }

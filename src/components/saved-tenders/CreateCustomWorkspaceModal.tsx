@@ -31,7 +31,7 @@ function createInitialColumns(): ColumnSelection[] {
       return {
         id,
         label: column?.label ?? id,
-        selected: id === "select" || id === "name",
+        selected: id === "select" || id === "name" || id === "decision",
       };
     }),
   );
@@ -51,7 +51,7 @@ function pinRequiredColumnsFirst(columns: ColumnSelection[]): ColumnSelection[] 
   ];
 }
 
-const immovableColumnIds = new Set<TableColumnId>(["select", "name"]);
+const immovableColumnIds = new Set<TableColumnId>(["select", "name", "decision"]);
 
 export function CreateCustomWorkspaceModal({
   isOpen,

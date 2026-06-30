@@ -27,6 +27,7 @@ import type {
   TenderQualification,
   TenderSidebarUpdates,
   TenderStatus,
+  TenderDecision,
 } from "../types/tender";
 import { ensureSelectColumnFirst, type TableColumnId } from "../data/tableColumns";
 import {
@@ -307,6 +308,35 @@ export function SavedTendersPage() {
     [handleTenderUpdate],
   );
 
+  const handleDecisionChange = useCallback(
+    (tenderId: string, decision: TenderDecision) => {
+      const currentTender =
+        tendersRef.current.find((tender) => tender.id === tenderId) ??
+        urgentTendersRef.current.find((tender) => tender.id === tenderId) ??
+        teamTendersRef.current.find((tender) => tender.id === tenderId) ??
+        leadershipTendersRef.current.find((tender) => tender.id === tenderId);
+
+      const updates: TenderSidebarUpdates = { decision };
+
+      if (decision === "aussortiert") {
+        updates.status = "aussortiert";
+      } else if (currentTender?.status === "aussortiert") {
+        updates.status = "vorgemerkt";
+      }
+
+      setTenders((current) => mapTenderList(current, tenderId, updates));
+      setUrgentTenders((current) => mapTenderList(current, tenderId, updates));
+      setTeamTenders((current) => mapTenderList(current, tenderId, updates));
+      setLeadershipTenders((current) =>
+        mapTenderList(current, tenderId, updates),
+      );
+      setPanelTender((current) =>
+        current?.id === tenderId ? { ...current, ...updates } : current,
+      );
+    },
+    [],
+  );
+
   const handleVote = useCallback(
     (
       tenderId: string,
@@ -467,7 +497,7 @@ export function SavedTendersPage() {
 
       <main
         ref={mainScrollRef}
-        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-l py-s"
+        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-s py-s"
       >
         <div className="flex shrink-0 flex-col gap-xs">
           <h1 className="text-h2 text-text-primary">Projekte</h1>
@@ -528,6 +558,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onDecisionChange={handleDecisionChange}
               onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
@@ -538,6 +569,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onDecisionChange={handleDecisionChange}
               onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
@@ -549,6 +581,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
+              onDecisionChange={handleDecisionChange}
               {...tableSelectionProps}
               {...statusFilterProps}
             />
@@ -559,6 +592,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
+              onDecisionChange={handleDecisionChange}
               onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
@@ -569,6 +603,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onDecisionChange={handleDecisionChange}
               onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}

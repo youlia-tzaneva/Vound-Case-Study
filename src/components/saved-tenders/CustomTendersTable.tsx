@@ -1,19 +1,21 @@
 import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
+import { DeadlineText } from "./DeadlineText";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
-import type { Tender, TenderOwner } from "../../types/tender";
+import type { Tender, TenderOwner, TenderDecision } from "../../types/tender";
 import type { VoteType } from "../../utils/applyVote";
 import type { TableColumnId } from "../../data/tableColumns";
 import { allTableColumns, ensureSelectColumnFirst } from "../../data/tableColumns";
 import { statusLabels } from "../../data/mockTenders";
+import { DecisionCell } from "./DecisionCell";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface CustomTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
@@ -21,6 +23,7 @@ interface CustomTendersTableProps extends TableSelectionProps, StatusFilterProps
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onDecisionChange: (tenderId: string, decision: TenderDecision) => void;
   onVote?: (
     tenderId: string,
     type: VoteType,
@@ -34,6 +37,7 @@ export function CustomTendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
+  onDecisionChange,
   onVote,
   selectedStatuses,
   onStatusToggle,
@@ -52,7 +56,7 @@ export function CustomTendersTable({
               <th
                 key={columnId}
                 scope="col"
-                className={`${thClass} ${index === orderedColumns.length - 1 ? "border-r-0" : ""}`}
+                className={`${thClass} ${columnId === "deadline" ? deadlineColumnClass : ""} ${index === orderedColumns.length - 1 ? "border-r-0" : ""}`}
               >
                 {columnId === "select" ? (
                   <span className="sr-only">{columnLabels.get(columnId)}</span>
@@ -81,6 +85,9 @@ export function CustomTendersTable({
               }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onDecisionChange={(decision) =>
+                onDecisionChange(tender.id, decision)
+              }
               onVote={(type) =>
                 onVote?.(tender.id, type, tender.qualification)
               }
@@ -100,6 +107,7 @@ function CustomTenderRow({
   onSelectedChange,
   onOpen,
   onOwnerChange,
+  onDecisionChange,
   onVote,
 }: {
   tender: Tender;
@@ -109,6 +117,7 @@ function CustomTenderRow({
   onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onDecisionChange: (decision: TenderDecision) => void;
   onVote?: (type: VoteType) => void;
 }) {
   const isHighlighted = isSelected || isActive;
@@ -119,9 +128,18 @@ function CustomTenderRow({
       {columns.map((columnId, index) => (
         <td
           key={columnId}
-          className={cellClass(index === columns.length - 1 ? "border-r-0" : undefined)}
+          className={cellClass(
+            [
+              columnId === "deadline" ? deadlineColumnClass : undefined,
+              index === columns.length - 1 ? "border-r-0" : undefined,
+            ]
+              .filter(Boolean)
+              .join(" ") || undefined,
+          )}
           onClick={
-            columnId === "select" || columnId === "owner"
+            columnId === "select" ||
+            columnId === "owner" ||
+            columnId === "decision"
               ? (event) => event.stopPropagation()
               : undefined
           }
@@ -132,6 +150,7 @@ function CustomTenderRow({
             isSelected={isSelected}
             onSelectedChange={onSelectedChange}
             onOwnerChange={onOwnerChange}
+            onDecisionChange={onDecisionChange}
             onVote={onVote}
           />
         </td>
@@ -146,6 +165,7 @@ function ColumnCell({
   isSelected,
   onSelectedChange,
   onOwnerChange,
+  onDecisionChange,
   onVote,
 }: {
   columnId: TableColumnId;
@@ -153,6 +173,7 @@ function ColumnCell({
   isSelected: boolean;
   onSelectedChange: (selected: boolean) => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onDecisionChange: (decision: TenderDecision) => void;
   onVote?: (type: VoteType) => void;
 }) {
   switch (columnId) {
@@ -205,6 +226,14 @@ function ColumnCell({
       );
     case "comments":
       return <CommentsCell comment={tender.comment} />;
+    case "decision":
+      return (
+        <DecisionCell
+          decision={tender.decision}
+          status={tender.status}
+          onDecisionChange={onDecisionChange}
+        />
+      );
     case "service-type":
     case "lp":
     case "team":
@@ -217,18 +246,6 @@ function ColumnCell({
 
 function UnknownValue() {
   return <span className="text-table text-text-primary">Unbekannt</span>;
-}
-
-function DeadlineText({ deadline }: { deadline: string }) {
-  const [date, time] = deadline.split(" | ");
-
-  return (
-    <span className="whitespace-nowrap text-table text-text-primary">
-      {date}
-      <span className="text-border-dark"> | </span>
-      {time}
-    </span>
-  );
 }
 
 function UpdatesCell({ update }: { update: Tender["update"] }) {

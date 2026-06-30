@@ -11,6 +11,8 @@ export type TenderStatus =
   | "teilnahmeantrag-abgelehnt"
   | "angebot-abgelehnt";
 
+export type TenderDecision = "abgabe-geplant" | "aussortiert";
+
 export type UrgencyType = "overdue" | "deadline-soon" | null;
 
 export interface TenderOwner {
@@ -33,6 +35,8 @@ export interface TenderSidebarUpdates {
   team?: string;
   partner?: string;
   qualification?: TenderQualification;
+  status?: TenderStatus;
+  decision?: TenderDecision | null;
 }
 
 export interface TenderUpdate {
@@ -54,6 +58,7 @@ export interface Tender {
   urgency: UrgencyType;
   urgencyLabel?: string;
   status: TenderStatus;
+  decision?: TenderDecision | null;
   owner: TenderOwner;
   qualification: TenderQualification;
   update: TenderUpdate | null;
@@ -83,6 +88,7 @@ export interface UrgentTender {
   urgency: UrgencyType;
   urgencyLabel?: string;
   status: TenderStatus;
+  decision?: TenderDecision | null;
   update: TenderUpdate | null;
   owner: TenderOwner | null;
   qualification: TenderQualification;
@@ -95,6 +101,7 @@ export interface TeamTender {
   leistungsart: string;
   lp: string;
   status: TenderStatus;
+  decision?: TenderDecision | null;
   deadline: string;
   urgency: UrgencyType;
   urgencyLabel?: string;
@@ -108,6 +115,7 @@ export interface LeadershipTender {
   name: string;
   location: string;
   status: TenderStatus;
+  decision?: TenderDecision | null;
   deadline: string;
   urgency: UrgencyType;
   urgencyLabel?: string;

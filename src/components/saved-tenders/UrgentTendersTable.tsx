@@ -5,23 +5,26 @@ import {
   urgentReasonToVariant,
 } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
+import { DeadlineText } from "./DeadlineText";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
-import type { UrgentTender, TenderOwner } from "../../types/tender";
+import type { UrgentTender, TenderOwner, TenderDecision } from "../../types/tender";
 import type { VoteType } from "../../utils/applyVote";
 import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
+import { DecisionCell } from "./DecisionCell";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, selectColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface UrgentTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: UrgentTender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: UrgentTender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onDecisionChange: (tenderId: string, decision: TenderDecision) => void;
   onVote?: (
     tenderId: string,
     type: VoteType,
@@ -34,6 +37,7 @@ export function UrgentTendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
+  onDecisionChange,
   onVote,
   selectedStatuses,
   onStatusToggle,
@@ -45,7 +49,7 @@ export function UrgentTendersTable({
       <table className={`${tableClass} min-w-[1100px]`}>
         <thead>
           <tr>
-            <th scope="col" className={`${thClass} w-[52px]`}>
+            <th scope="col" className={`${thClass} ${selectColumnClass}`}>
               <span className="sr-only">Auswählen</span>
             </th>
             <th scope="col" className={`${thClass} min-w-[198px]`}>
@@ -54,7 +58,7 @@ export function UrgentTendersTable({
             <th scope="col" className={`${thClass} w-[176px]`}>
               Dringend
             </th>
-            <th scope="col" className={`${thClass} w-[136px]`}>
+            <th scope="col" className={`${thClass} ${deadlineColumnClass}`}>
               Abgabefrist
             </th>
             <th scope="col" className={`${thClass} w-[176px]`}>
@@ -69,8 +73,11 @@ export function UrgentTendersTable({
             <th scope="col" className={`${thClass} w-[168px]`}>
               Projekt Owner
             </th>
-            <th scope="col" className={`${thClass} w-[173px] border-r-0`}>
+            <th scope="col" className={`${thClass} w-[173px]`}>
               Qualifikation
+            </th>
+            <th scope="col" className={`${thClass} w-[180px] border-r-0`}>
+              Entscheidung
             </th>
           </tr>
         </thead>
@@ -86,6 +93,9 @@ export function UrgentTendersTable({
               }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onDecisionChange={(decision) =>
+                onDecisionChange(tender.id, decision)
+              }
               onVote={(type) =>
                 onVote?.(tender.id, type, tender.qualification)
               }
@@ -104,6 +114,7 @@ function UrgentTenderRow({
   onSelectedChange,
   onOpen,
   onOwnerChange,
+  onDecisionChange,
   onVote,
 }: {
   tender: UrgentTender;
@@ -112,6 +123,7 @@ function UrgentTenderRow({
   onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onDecisionChange: (decision: TenderDecision) => void;
   onVote?: (type: VoteType) => void;
 }) {
   const isHighlighted = isSelected || isActive;
@@ -120,7 +132,7 @@ function UrgentTenderRow({
   return (
     <tr className="group cursor-pointer" onClick={onOpen}>
       <td
-        className={cellClass()}
+        className={cellClass(selectColumnClass)}
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
@@ -142,7 +154,7 @@ function UrgentTenderRow({
       <td className={cellClass()}>
         <UrgentReasonCell reason={tender.urgentReason} />
       </td>
-      <td className={cellClass()}>
+      <td className={cellClass(deadlineColumnClass)}>
         <div className="flex flex-col gap-3xs">
           <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
           <DeadlineText deadline={tender.deadline} />
@@ -162,10 +174,17 @@ function UrgentTenderRow({
           onOwnerChange={onOwnerChange}
         />
       </td>
-      <td className={cellClass("border-r-0")}>
+      <td className={cellClass()}>
         <QualificationCell
           qualification={tender.qualification}
           onVote={(type) => onVote?.(type)}
+        />
+      </td>
+      <td className={cellClass("border-r-0")}>
+        <DecisionCell
+          decision={tender.decision}
+          status={tender.status}
+          onDecisionChange={onDecisionChange}
         />
       </td>
     </tr>
@@ -182,18 +201,6 @@ function UrgentReasonCell({ reason }: { reason: UrgentTender["urgentReason"] }) 
       </span>
       {reason === "neues-dokument" && <TextLink>Dokument anzeigen</TextLink>}
     </div>
-  );
-}
-
-function DeadlineText({ deadline }: { deadline: string }) {
-  const [date, time] = deadline.split(" | ");
-
-  return (
-    <span className="whitespace-nowrap text-table text-text-primary">
-      {date}
-      <span className="text-border-dark"> | </span>
-      {time}
-    </span>
   );
 }
 

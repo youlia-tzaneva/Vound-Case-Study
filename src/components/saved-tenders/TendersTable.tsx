@@ -1,23 +1,26 @@
 import { Badge, statusToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
+import { DeadlineText } from "./DeadlineText";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
-import type { Tender, TenderOwner } from "../../types/tender";
+import type { Tender, TenderOwner, TenderDecision } from "../../types/tender";
 import type { VoteType } from "../../utils/applyVote";
 import { statusLabels } from "../../data/mockTenders";
+import { DecisionCell } from "./DecisionCell";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, selectColumnClass, statusColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface TendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onDecisionChange: (tenderId: string, decision: TenderDecision) => void;
   onVote?: (
     tenderId: string,
     type: VoteType,
@@ -30,6 +33,7 @@ export function TendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
+  onDecisionChange,
   onVote,
   selectedStatuses,
   onStatusToggle,
@@ -38,19 +42,19 @@ export function TendersTable({
 }: TendersTableProps) {
   return (
     <div className={tableWrapperClass}>
-      <table className={`${tableClass} min-w-[1100px]`}>
+      <table className={`${tableClass} min-w-[1280px]`}>
         <thead>
           <tr>
-            <th scope="col" className={`${thClass} w-[52px]`}>
+            <th scope="col" className={`${thClass} ${selectColumnClass}`}>
               <span className="sr-only">Auswählen</span>
             </th>
             <th scope="col" className={`${thClass} min-w-[198px]`}>
               Name
             </th>
-            <th scope="col" className={`${thClass} w-[136px]`}>
+            <th scope="col" className={`${thClass} ${deadlineColumnClass}`}>
               Abgabefrist
             </th>
-            <th scope="col" className={`${thClass} w-[176px]`}>
+            <th scope="col" className={`${thClass} ${statusColumnClass}`}>
               <StatusColumnHeader
                 selectedStatuses={selectedStatuses}
                 onStatusToggle={onStatusToggle}
@@ -65,8 +69,11 @@ export function TendersTable({
             <th scope="col" className={`${thClass} w-[182px]`}>
               Aktualisierungen
             </th>
-            <th scope="col" className={`${thClass} border-r-0`}>
+            <th scope="col" className={`${thClass} w-[182px]`}>
               Notizen / Kommentare
+            </th>
+            <th scope="col" className={`${thClass} w-[180px] border-r-0`}>
+              Entscheidung
             </th>
           </tr>
         </thead>
@@ -82,6 +89,9 @@ export function TendersTable({
               }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onDecisionChange={(decision) =>
+                onDecisionChange(tender.id, decision)
+              }
               onVote={(type) =>
                 onVote?.(tender.id, type, tender.qualification)
               }
@@ -100,6 +110,7 @@ function TenderRow({
   onSelectedChange,
   onOpen,
   onOwnerChange,
+  onDecisionChange,
   onVote,
 }: {
   tender: Tender;
@@ -108,6 +119,7 @@ function TenderRow({
   onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onDecisionChange: (decision: TenderDecision) => void;
   onVote?: (type: VoteType) => void;
 }) {
   const isHighlighted = isSelected || isActive;
@@ -116,7 +128,7 @@ function TenderRow({
   return (
     <tr className="group cursor-pointer" onClick={onOpen}>
       <td
-        className={cellClass()}
+        className={cellClass(selectColumnClass)}
         onClick={(event) => event.stopPropagation()}
       >
         <Checkbox
@@ -135,14 +147,17 @@ function TenderRow({
           </span>
         </div>
       </td>
-      <td className={cellClass()}>
+      <td className={cellClass(deadlineColumnClass)}>
         <div className="flex flex-col gap-3xs">
           <DeadlineUrgencyText deadline={tender.deadline} urgency={tender.urgency} />
           <DeadlineText deadline={tender.deadline} />
         </div>
       </td>
-      <td className={cellClass()}>
-        <Badge variant={statusToVariant(tender.status)}>
+      <td className={cellClass(statusColumnClass)}>
+        <Badge
+          variant={statusToVariant(tender.status)}
+          className="max-w-full whitespace-normal"
+        >
           {statusLabels[tender.status]}
         </Badge>
       </td>
@@ -161,22 +176,17 @@ function TenderRow({
       <td className={cellClass()}>
         <UpdatesCell update={tender.update} />
       </td>
-      <td className={cellClass("border-r-0")}>
+      <td className={cellClass()}>
         <CommentsCell comment={tender.comment} />
       </td>
+      <td className={cellClass("border-r-0")}>
+        <DecisionCell
+          decision={tender.decision}
+          status={tender.status}
+          onDecisionChange={onDecisionChange}
+        />
+      </td>
     </tr>
-  );
-}
-
-function DeadlineText({ deadline }: { deadline: string }) {
-  const [date, time] = deadline.split(" | ");
-
-  return (
-    <span className="whitespace-nowrap text-table text-text-primary">
-      {date}
-      <span className="text-border-dark"> | </span>
-      {time}
-    </span>
   );
 }
 

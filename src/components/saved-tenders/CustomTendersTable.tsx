@@ -2,6 +2,7 @@ import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { DeadlineText } from "./DeadlineText";
 import { Avatar } from "../ui/Avatar";
+import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { Tender, TenderOwner, TenderDecision } from "../../types/tender";
 import type { VoteType } from "../../utils/applyVote";
@@ -14,7 +15,7 @@ import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, deadlineColumnClass, dropdownCellClass, statusFilterHeaderClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, dropdownCellClass, selectColumnClass, statusFilterHeaderClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface CustomTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
@@ -53,6 +54,9 @@ export function CustomTendersTable({
       <table className={`${tableClass} min-w-[900px]`}>
         <thead>
           <tr>
+            <th scope="col" className={`${thClass} ${selectColumnClass}`}>
+              <span className="sr-only">Auswählen</span>
+            </th>
             {orderedColumns.map((columnId, index) => (
               <th
                 key={columnId}
@@ -124,6 +128,16 @@ function CustomTenderRow({
 
   return (
     <tr className="group cursor-pointer" onClick={onOpen}>
+      <td
+        className={cellClass(selectColumnClass)}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <Checkbox
+          checked={isSelected}
+          onChange={onSelectedChange}
+          label={`${tender.name} auswählen`}
+        />
+      </td>
       {columns.map((columnId, index) => (
         <td
           key={columnId}
@@ -149,8 +163,6 @@ function CustomTenderRow({
           <ColumnCell
             columnId={columnId}
             tender={tender}
-            isSelected={isSelected}
-            onSelectedChange={onSelectedChange}
             onOwnerChange={onOwnerChange}
             onDecisionChange={onDecisionChange}
             onVote={onVote}
@@ -164,16 +176,12 @@ function CustomTenderRow({
 function ColumnCell({
   columnId,
   tender,
-  isSelected,
-  onSelectedChange,
   onOwnerChange,
   onDecisionChange,
   onVote,
 }: {
   columnId: TableColumnId;
   tender: Tender;
-  isSelected: boolean;
-  onSelectedChange: (selected: boolean) => void;
   onOwnerChange: (owner: TenderOwner) => void;
   onDecisionChange: (decision: TenderDecision) => void;
   onVote?: (type: VoteType) => void;

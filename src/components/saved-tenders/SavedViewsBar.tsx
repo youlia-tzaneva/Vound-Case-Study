@@ -4,6 +4,7 @@ import type { SavedView } from "../../types/tender";
 import type { TableColumnId } from "../../data/tableColumns";
 import { withIconClass } from "../ui/iconProps";
 import { CreateCustomWorkspaceModal } from "./CreateCustomWorkspaceModal";
+import { DROPDOWN_GAP_PX } from "./useFixedDropdownStyle";
 
 interface SavedViewsBarProps {
   views: SavedView[];
@@ -61,10 +62,11 @@ export function SavedViewsBar({
     }
 
     event.preventDefault();
+    const rect = event.currentTarget.getBoundingClientRect();
     setContextMenu({
       viewId: view.id,
-      x: event.clientX,
-      y: event.clientY,
+      x: rect.left,
+      y: rect.bottom + DROPDOWN_GAP_PX,
     });
   };
 

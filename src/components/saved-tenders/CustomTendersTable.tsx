@@ -4,6 +4,7 @@ import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { Tender, TenderOwner } from "../../types/tender";
+import type { VoteType } from "../../utils/applyVote";
 import type { TableColumnId } from "../../data/tableColumns";
 import { allTableColumns, ensureSelectColumnFirst } from "../../data/tableColumns";
 import { statusLabels } from "../../data/mockTenders";
@@ -20,8 +21,9 @@ interface CustomTendersTableProps extends TableSelectionProps, StatusFilterProps
   activeTenderId?: string | null;
   onTenderOpen: (tender: Tender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
-  onQualificationChange?: (
+  onVote?: (
     tenderId: string,
+    type: VoteType,
     qualification: Tender["qualification"],
   ) => void;
 }
@@ -32,7 +34,7 @@ export function CustomTendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
-  onQualificationChange,
+  onVote,
   selectedStatuses,
   onStatusToggle,
   isRowSelected,
@@ -79,8 +81,8 @@ export function CustomTendersTable({
               }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
-              onQualificationChange={(qualification) =>
-                onQualificationChange?.(tender.id, qualification)
+              onVote={(type) =>
+                onVote?.(tender.id, type, tender.qualification)
               }
             />
           ))}
@@ -98,7 +100,7 @@ function CustomTenderRow({
   onSelectedChange,
   onOpen,
   onOwnerChange,
-  onQualificationChange,
+  onVote,
 }: {
   tender: Tender;
   columns: TableColumnId[];
@@ -107,7 +109,7 @@ function CustomTenderRow({
   onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
-  onQualificationChange?: (qualification: Tender["qualification"]) => void;
+  onVote?: (type: VoteType) => void;
 }) {
   const isHighlighted = isSelected || isActive;
   const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
@@ -130,7 +132,7 @@ function CustomTenderRow({
             isSelected={isSelected}
             onSelectedChange={onSelectedChange}
             onOwnerChange={onOwnerChange}
-            onQualificationChange={onQualificationChange}
+            onVote={onVote}
           />
         </td>
       ))}
@@ -144,14 +146,14 @@ function ColumnCell({
   isSelected,
   onSelectedChange,
   onOwnerChange,
-  onQualificationChange,
+  onVote,
 }: {
   columnId: TableColumnId;
   tender: Tender;
   isSelected: boolean;
   onSelectedChange: (selected: boolean) => void;
   onOwnerChange: (owner: TenderOwner) => void;
-  onQualificationChange?: (qualification: Tender["qualification"]) => void;
+  onVote?: (type: VoteType) => void;
 }) {
   switch (columnId) {
     case "select":
@@ -197,9 +199,8 @@ function ColumnCell({
     case "qualification":
       return (
         <QualificationCell
-          tenderId={tender.id}
           qualification={tender.qualification}
-          onQualificationChange={onQualificationChange}
+          onVote={(type) => onVote?.(type)}
         />
       );
     case "comments":

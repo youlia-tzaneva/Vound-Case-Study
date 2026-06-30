@@ -1,7 +1,7 @@
 export const tableWrapperClass = "w-full";
 
-export const tableScrollContainerClass =
-  "min-h-0 flex-1 overflow-auto rounded-container border border-border-dark bg-bg-containers [overflow-anchor:none]";
+export const tableContainerClass =
+  "overflow-x-auto rounded-container border border-border-dark bg-bg-containers";
 
 export const tableClass = "w-full border-separate border-spacing-0";
 

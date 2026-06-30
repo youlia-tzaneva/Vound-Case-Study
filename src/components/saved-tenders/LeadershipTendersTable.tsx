@@ -2,6 +2,7 @@ import { Badge, statusToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Checkbox } from "../ui/Checkbox";
 import type { LeadershipTender, TenderOwner } from "../../types/tender";
+import type { VoteType } from "../../utils/applyVote";
 import { statusLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
@@ -17,8 +18,9 @@ interface LeadershipTendersTableProps extends TableSelectionProps, StatusFilterP
   onTenderOpen: (tender: LeadershipTender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
   onTeamChange: (tenderId: string, team: string) => void;
-  onQualificationChange?: (
+  onVote?: (
     tenderId: string,
+    type: VoteType,
     qualification: LeadershipTender["qualification"],
   ) => void;
 }
@@ -29,7 +31,7 @@ export function LeadershipTendersTable({
   onTenderOpen,
   onOwnerChange,
   onTeamChange,
-  onQualificationChange,
+  onVote,
   selectedStatuses,
   onStatusToggle,
   isRowSelected,
@@ -82,8 +84,8 @@ export function LeadershipTendersTable({
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
               onTeamChange={(team) => onTeamChange(tender.id, team)}
-              onQualificationChange={(qualification) =>
-                onQualificationChange?.(tender.id, qualification)
+              onVote={(type) =>
+                onVote?.(tender.id, type, tender.qualification)
               }
             />
           ))}
@@ -101,7 +103,7 @@ function LeadershipTenderRow({
   onOpen,
   onOwnerChange,
   onTeamChange,
-  onQualificationChange,
+  onVote,
 }: {
   tender: LeadershipTender;
   isActive: boolean;
@@ -110,9 +112,7 @@ function LeadershipTenderRow({
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
   onTeamChange: (team: string) => void;
-  onQualificationChange?: (
-    qualification: LeadershipTender["qualification"],
-  ) => void;
+  onVote?: (type: VoteType) => void;
 }) {
   const isHighlighted = isSelected || isActive;
   const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
@@ -157,9 +157,8 @@ function LeadershipTenderRow({
       </td>
       <td className={cellClass()}>
         <QualificationCell
-          tenderId={tender.id}
           qualification={tender.qualification}
-          onQualificationChange={onQualificationChange}
+          onVote={(type) => onVote?.(type)}
         />
       </td>
       <td className={cellClass()}>

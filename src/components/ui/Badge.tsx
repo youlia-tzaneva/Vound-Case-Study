@@ -11,7 +11,7 @@ type BadgeVariant =
 
 const variantStyles: Record<
   BadgeVariant,
-  { bg: string; text: string; fullWidth?: boolean; fitContent?: boolean }
+  { bg: string; text: string; fullWidth?: boolean }
 > = {
   "status-info": {
     bg: "bg-status-info-bg",
@@ -20,12 +20,10 @@ const variantStyles: Record<
   "status-progress": {
     bg: "bg-status-progress-bg",
     text: "text-status-progress-text",
-    fitContent: true,
   },
   "status-submitted": {
     bg: "bg-status-submitted-bg",
     text: "text-status-submitted-text",
-    fitContent: true,
   },
   "status-success": {
     bg: "bg-status-success-bg",
@@ -34,7 +32,6 @@ const variantStyles: Record<
   "status-rejected": {
     bg: "bg-status-rejected-bg",
     text: "text-status-rejected-text",
-    fitContent: true,
   },
   "urgency-overdue": {
     bg: "bg-urgency-overdue-bg",
@@ -59,7 +56,7 @@ export function Badge({ variant, children, className = "" }: BadgeProps) {
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-[2px] px-3xs py-4xs text-badge ${styles.bg} ${styles.text} ${styles.fullWidth ? "w-full" : ""} ${styles.fitContent ? "w-fit" : ""} ${className}`}
+      className={`inline-flex items-center justify-center rounded-[2px] px-3xs py-4xs text-badge ${styles.bg} ${styles.text} ${styles.fullWidth ? "w-full" : "w-fit"} ${className}`}
     >
       {children}
     </span>

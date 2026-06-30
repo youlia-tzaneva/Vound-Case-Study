@@ -1,21 +1,30 @@
 import { useEffect } from "react";
 import { TenderSidePanel } from "./TenderSidePanel";
-import type { TenderPanelView, TenderSidebarUpdates } from "../../types/tender";
+import type {
+  TenderPanelView,
+  TenderQualification,
+  TenderSidebarUpdates,
+} from "../../types/tender";
+import type { VoteType } from "../../utils/applyVote";
 
 interface TenderSidePanelDrawerProps {
   tender: TenderPanelView | null;
+  userVote: VoteType | null;
   isOpen: boolean;
   onClose: () => void;
   onClosed: () => void;
   onTenderUpdate: (tenderId: string, updates: TenderSidebarUpdates) => void;
+  onVote: (tenderId: string, type: VoteType, qualification: TenderQualification) => void;
 }
 
 export function TenderSidePanelDrawer({
   tender,
+  userVote,
   isOpen,
   onClose,
   onClosed,
   onTenderUpdate,
+  onVote,
 }: TenderSidePanelDrawerProps) {
   useEffect(() => {
     if (!isOpen && tender) {
@@ -47,8 +56,12 @@ export function TenderSidePanelDrawer({
       >
         <TenderSidePanel
           tender={tender}
+          userVote={userVote}
           onClose={onClose}
           onUpdate={(updates) => onTenderUpdate(tender.id, updates)}
+          onVote={(type, qualification) =>
+            onVote(tender.id, type, qualification)
+          }
         />
       </div>
     </>

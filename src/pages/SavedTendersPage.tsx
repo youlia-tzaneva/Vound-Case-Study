@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppSidebar } from "../components/layout/AppSidebar";
 import { SavedViewsBar } from "../components/saved-tenders/SavedViewsBar";
 import { SavedTendersToolbar } from "../components/saved-tenders/SavedTendersToolbar";
@@ -33,7 +33,7 @@ import {
   createDefaultStatusFilter,
   matchesStatusFilter,
 } from "../data/statusFilter";
-import { tableScrollContainerClass } from "../components/saved-tenders/tableStyles";
+import { tableContainerClass } from "../components/saved-tenders/tableStyles";
 import { mapTenderList } from "../utils/applyTenderSidebarUpdates";
 import {
   markTenderUpdatesRead,
@@ -42,6 +42,7 @@ import {
 import { useTenderRowSelection } from "../hooks/useTenderRowSelection";
 import type { TenderSortOption } from "../utils/sortTenders";
 import { sortTenderList } from "../utils/sortTenders";
+import { applyVote, type VoteType } from "../utils/applyVote";
 
 function filterTendersByView(
   tenders: typeof initialTenders,
@@ -81,6 +82,11 @@ export function SavedTendersPage() {
     createDefaultStatusFilter,
   );
   const [sortBy, setSortBy] = useState<TenderSortOption | null>(null);
+  const [userVotes, setUserVotes] = useState<Record<string, VoteType | null>>(
+    {},
+  );
+  const userVotesRef = useRef(userVotes);
+  userVotesRef.current = userVotes;
 
   const activeView = views.find((view) => view.isActive);
   const activeViewId = activeView?.id ?? "all";
@@ -157,8 +163,7 @@ export function SavedTendersPage() {
     toggleAll,
   } = useTenderRowSelection(activeTenderIds);
   const selectedIdList = useMemo(() => [...selectedIds], [selectedIds]);
-  const tableScrollRef = useRef<HTMLDivElement>(null);
-  const preservedScrollTopRef = useRef<number | null>(null);
+  const mainScrollRef = useRef<HTMLElement>(null);
   const bulkMarkReadStateRef = useRef<{
     affectedIds: string[];
     panelUpdatesSnapshot: TenderPanelUpdate[] | null;
@@ -176,48 +181,28 @@ export function SavedTendersPage() {
   leadershipTendersRef.current = leadershipTenders;
   panelTenderRef.current = panelTender;
 
-  const preserveTableScroll = useCallback(() => {
-    if (tableScrollRef.current) {
-      preservedScrollTopRef.current = tableScrollRef.current.scrollTop;
-    }
-  }, []);
-
   const handleRowSelectedChange = useCallback(
     (id: string, checked: boolean) => {
-      preserveTableScroll();
       toggleRow(id, checked);
     },
-    [preserveTableScroll, toggleRow],
+    [toggleRow],
   );
 
   const handleSelectAll = useCallback(() => {
-    preserveTableScroll();
     selectAll();
-  }, [preserveTableScroll, selectAll]);
+  }, [selectAll]);
 
   const handleSelectNone = useCallback(() => {
-    preserveTableScroll();
     selectNone();
-  }, [preserveTableScroll, selectNone]);
+  }, [selectNone]);
 
   const handleToggleAll = useCallback(() => {
-    preserveTableScroll();
     toggleAll();
-  }, [preserveTableScroll, toggleAll]);
-
-  useLayoutEffect(() => {
-    const scrollContainer = tableScrollRef.current;
-    const preservedScrollTop = preservedScrollTopRef.current;
-
-    if (scrollContainer && preservedScrollTop !== null) {
-      scrollContainer.scrollTop = preservedScrollTop;
-      preservedScrollTopRef.current = null;
-    }
-  }, [hasSelection, selectedIds]);
+  }, [toggleAll]);
 
   useEffect(() => {
     selectNone();
-    tableScrollRef.current?.scrollTo({ top: 0 });
+    mainScrollRef.current?.scrollTo({ top: 0 });
   }, [activeViewId, selectNone]);
 
   useEffect(() => {
@@ -225,7 +210,7 @@ export function SavedTendersPage() {
   }, [selectedIdList]);
 
   useEffect(() => {
-    tableScrollRef.current?.scrollTo({ top: 0 });
+    mainScrollRef.current?.scrollTo({ top: 0 });
   }, [searchTerm, ownerFilter, selectedStatuses, sortBy]);
 
   const handleViewSelect = (id: string) => {
@@ -322,9 +307,19 @@ export function SavedTendersPage() {
     [handleTenderUpdate],
   );
 
-  const handleQualificationChange = useCallback(
-    (tenderId: string, qualification: TenderQualification) => {
-      handleTenderUpdate(tenderId, { qualification });
+  const handleVote = useCallback(
+    (
+      tenderId: string,
+      type: VoteType,
+      qualification: TenderQualification,
+    ) => {
+      const selectedVote = userVotesRef.current[tenderId] ?? null;
+      const result = applyVote(qualification, selectedVote, type);
+      setUserVotes((current) => ({
+        ...current,
+        [tenderId]: result.selectedVote,
+      }));
+      handleTenderUpdate(tenderId, { qualification: result.qualification });
     },
     [handleTenderUpdate],
   );
@@ -440,13 +435,9 @@ export function SavedTendersPage() {
     [],
   );
 
-  const runBulkAction = useCallback(
-    (action: () => void) => {
-      preserveTableScroll();
-      action();
-    },
-    [preserveTableScroll],
-  );
+  const runBulkAction = useCallback((action: () => void) => {
+    action();
+  }, []);
 
   const handleStatusToggle = useCallback((status: TenderStatus) => {
     setSelectedStatuses((current) => {
@@ -474,7 +465,10 @@ export function SavedTendersPage() {
     <div className="flex h-screen overflow-hidden bg-bg-base">
       <AppSidebar />
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-l py-s">
+      <main
+        ref={mainScrollRef}
+        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto px-l py-s"
+      >
         <div className="flex shrink-0 flex-col gap-xs">
           <h1 className="text-h2 text-text-primary">Projekte</h1>
 
@@ -499,9 +493,9 @@ export function SavedTendersPage() {
           </div>
         </div>
 
-        <div className="relative mt-xs flex min-h-0 flex-1 flex-col">
+        <div className="mt-xs flex flex-col gap-xs">
           {hasSelection && (
-            <div className="absolute inset-x-0 top-0 z-10 bg-bg-base pb-xs">
+            <div className="shrink-0">
               <BulkSelectionActionBar
                 allSelected={allSelected}
                 someSelected={someSelected}
@@ -526,7 +520,7 @@ export function SavedTendersPage() {
             </div>
           )}
 
-          <div ref={tableScrollRef} className={tableScrollContainerClass}>
+          <div className={tableContainerClass}>
           {isCustomView ? (
             <CustomTendersTable
               tenders={filteredTenders}
@@ -534,7 +528,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
-              onQualificationChange={handleQualificationChange}
+              onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
             />
@@ -544,7 +538,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
-              onQualificationChange={handleQualificationChange}
+              onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
             />
@@ -565,7 +559,7 @@ export function SavedTendersPage() {
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
               onTeamChange={handleTeamChange}
-              onQualificationChange={handleQualificationChange}
+              onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
             />
@@ -575,7 +569,7 @@ export function SavedTendersPage() {
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
-              onQualificationChange={handleQualificationChange}
+              onVote={handleVote}
               {...tableSelectionProps}
               {...statusFilterProps}
             />
@@ -586,10 +580,12 @@ export function SavedTendersPage() {
 
       <TenderSidePanelDrawer
         tender={panelTender}
+        userVote={panelTender ? (userVotes[panelTender.id] ?? null) : null}
         isOpen={isPanelOpen}
         onClose={handlePanelClose}
         onClosed={handlePanelClosed}
         onTenderUpdate={handleTenderUpdate}
+        onVote={handleVote}
       />
     </div>
   );

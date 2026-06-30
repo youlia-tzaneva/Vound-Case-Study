@@ -8,6 +8,7 @@ import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { UrgentTender, TenderOwner } from "../../types/tender";
+import type { VoteType } from "../../utils/applyVote";
 import { statusLabels, urgentReasonLabels } from "../../data/mockTenders";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
@@ -21,8 +22,9 @@ interface UrgentTendersTableProps extends TableSelectionProps, StatusFilterProps
   activeTenderId?: string | null;
   onTenderOpen: (tender: UrgentTender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
-  onQualificationChange?: (
+  onVote?: (
     tenderId: string,
+    type: VoteType,
     qualification: UrgentTender["qualification"],
   ) => void;
 }
@@ -32,7 +34,7 @@ export function UrgentTendersTable({
   activeTenderId = null,
   onTenderOpen,
   onOwnerChange,
-  onQualificationChange,
+  onVote,
   selectedStatuses,
   onStatusToggle,
   isRowSelected,
@@ -84,8 +86,8 @@ export function UrgentTendersTable({
               }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
-              onQualificationChange={(qualification) =>
-                onQualificationChange?.(tender.id, qualification)
+              onVote={(type) =>
+                onVote?.(tender.id, type, tender.qualification)
               }
             />
           ))}
@@ -102,7 +104,7 @@ function UrgentTenderRow({
   onSelectedChange,
   onOpen,
   onOwnerChange,
-  onQualificationChange,
+  onVote,
 }: {
   tender: UrgentTender;
   isActive: boolean;
@@ -110,9 +112,7 @@ function UrgentTenderRow({
   onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
-  onQualificationChange?: (
-    qualification: UrgentTender["qualification"],
-  ) => void;
+  onVote?: (type: VoteType) => void;
 }) {
   const isHighlighted = isSelected || isActive;
   const cellClass = (extra?: string) => getTdClass(isHighlighted, extra);
@@ -164,9 +164,8 @@ function UrgentTenderRow({
       </td>
       <td className={cellClass("border-r-0")}>
         <QualificationCell
-          tenderId={tender.id}
           qualification={tender.qualification}
-          onQualificationChange={onQualificationChange}
+          onVote={(type) => onVote?.(type)}
         />
       </td>
     </tr>

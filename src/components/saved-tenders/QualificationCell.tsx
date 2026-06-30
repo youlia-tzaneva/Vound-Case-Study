@@ -1,31 +1,18 @@
 import { ThumbsDown, ThumbsUp } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { TenderQualification } from "../../types/tender";
-import { applyVote, type VoteType } from "../../utils/applyVote";
+import type { VoteType } from "../../utils/applyVote";
 import { withIconClass } from "../ui/iconProps";
 
 interface QualificationCellProps {
-  tenderId: string;
   qualification: TenderQualification;
-  onQualificationChange?: (qualification: TenderQualification) => void;
+  onVote: (type: VoteType) => void;
 }
 
 export function QualificationCell({
-  tenderId,
   qualification,
-  onQualificationChange,
+  onVote,
 }: QualificationCellProps) {
-  const [selectedVote, setSelectedVote] = useState<VoteType | null>(null);
-
-  useEffect(() => {
-    setSelectedVote(null);
-  }, [tenderId]);
-
-  const handleVote = (type: VoteType) => {
-    const result = applyVote(qualification, selectedVote, type);
-    setSelectedVote(result.selectedVote);
-    onQualificationChange?.(result.qualification);
-  };
 
   return (
     <div
@@ -47,7 +34,7 @@ export function QualificationCell({
             <InlineVoteButton
               ariaLabel="Positiv abstimmen"
               count={qualification.votesYes}
-              onClick={() => handleVote("yes")}
+              onClick={() => onVote("yes")}
               className="border-scoring-high bg-status-success-bg"
             >
               <ThumbsUp {...withIconClass("text-scoring-high")} size={12} />
@@ -55,7 +42,7 @@ export function QualificationCell({
             <InlineVoteButton
               ariaLabel="Neutral abstimmen"
               count={qualification.votesNeutral}
-              onClick={() => handleVote("neutral")}
+              onClick={() => onVote("neutral")}
               className="border-border-dark bg-bg-light"
             >
               <span>-</span>
@@ -63,7 +50,7 @@ export function QualificationCell({
             <InlineVoteButton
               ariaLabel="Negativ abstimmen"
               count={qualification.votesNo}
-              onClick={() => handleVote("no")}
+              onClick={() => onVote("no")}
               className="border-scoring-low bg-status-rejected-bg"
             >
               <ThumbsDown {...withIconClass("text-scoring-low")} size={12} />

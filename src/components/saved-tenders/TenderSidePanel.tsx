@@ -23,6 +23,7 @@ import { withIconClass } from "../ui/iconProps";
 import type {
   TenderOwner,
   TenderPanelView,
+  TenderQualification,
   TenderSidebarUpdates,
 } from "../../types/tender";
 import {
@@ -32,13 +33,15 @@ import {
   panelUsers,
   statusLabels,
 } from "../../data/mockTenders";
-import { applyVote } from "../../utils/applyVote";
+import type { VoteType } from "../../utils/applyVote";
 import { PanelDropdown, PanelDropdownOption } from "./PanelDropdown";
 
 interface TenderSidePanelProps {
   tender: TenderPanelView;
+  userVote: VoteType | null;
   onClose: () => void;
   onUpdate: (updates: TenderSidebarUpdates) => void;
+  onVote: (type: VoteType, qualification: TenderQualification) => void;
 }
 
 type PanelCornerRadius = "both" | "top" | "none" | "bottom";
@@ -77,8 +80,10 @@ function resolveCornerRadius(element: HTMLElement): PanelCornerRadius {
 
 export function TenderSidePanel({
   tender,
+  userVote,
   onClose,
   onUpdate,
+  onVote,
 }: TenderSidePanelProps) {
   const panelRef = useRef<HTMLElement>(null);
   const [cornerRadius, setCornerRadius] = useState<PanelCornerRadius>("top");
@@ -139,7 +144,12 @@ export function TenderSidePanel({
           <ProjectDetailsSection tender={tender} />
         </div>
 
-        <SidebarSection tender={tender} onUpdate={onUpdate} />
+        <SidebarSection
+          tender={tender}
+          userVote={userVote}
+          onUpdate={onUpdate}
+          onVote={onVote}
+        />
       </div>
 
       <ActivitySection tender={tender} />
@@ -218,18 +228,19 @@ function ProjectDetailsSection({ tender }: { tender: TenderPanelView }) {
 
 function SidebarSection({
   tender,
+  userVote,
   onUpdate,
+  onVote,
 }: {
   tender: TenderPanelView;
+  userVote: VoteType | null;
   onUpdate: (updates: TenderSidebarUpdates) => void;
+  onVote: (type: VoteType, qualification: TenderQualification) => void;
 }) {
   const [owner, setOwner] = useState<TenderOwner | null>(tender.owner);
   const [team, setTeam] = useState(tender.team);
   const [partner, setPartner] = useState(tender.partner);
   const [qualification, setQualification] = useState(tender.qualification);
-  const [selectedVote, setSelectedVote] = useState<
-    "yes" | "neutral" | "no" | null
-  >(null);
   const [openDropdown, setOpenDropdown] = useState<
     "owner" | "team" | "partner" | null
   >(null);
@@ -239,19 +250,21 @@ function SidebarSection({
     setTeam(tender.team);
     setPartner(tender.partner);
     setQualification(tender.qualification);
-    setSelectedVote(null);
     setOpenDropdown(null);
-  }, [tender.id]);
+  }, [
+    tender.id,
+    tender.owner,
+    tender.team,
+    tender.partner,
+    tender.qualification,
+  ]);
 
   const toggleDropdown = (id: "owner" | "team" | "partner") => {
     setOpenDropdown((current) => (current === id ? null : id));
   };
 
-  const handleVote = (type: "yes" | "neutral" | "no") => {
-    const result = applyVote(qualification, selectedVote, type);
-    setQualification(result.qualification);
-    setSelectedVote(result.selectedVote);
-    onUpdate({ qualification: result.qualification });
+  const handleVote = (type: VoteType) => {
+    onVote(type, qualification);
   };
 
   return (
@@ -370,7 +383,7 @@ function SidebarSection({
         <Field label="Votes">
           <VoteBadges
             qualification={qualification}
-            selectedVote={selectedVote}
+            userVote={userVote}
             onVote={handleVote}
           />
         </Field>
@@ -512,12 +525,12 @@ function DeadlineText({ deadline }: { deadline: string }) {
 
 function VoteBadges({
   qualification,
-  selectedVote,
+  userVote,
   onVote,
 }: {
   qualification: TenderPanelView["qualification"];
-  selectedVote: "yes" | "neutral" | "no" | null;
-  onVote: (type: "yes" | "neutral" | "no") => void;
+  userVote: VoteType | null;
+  onVote: (type: VoteType) => void;
 }) {
   return (
     <div className="flex flex-wrap gap-3xs">
@@ -529,7 +542,7 @@ function VoteBadges({
       >
         <ThumbsUp {...withIconClass("text-scoring-high")} size={12} />
         {qualification.votesYes}
-        {selectedVote === "yes" && (
+        {userVote === "yes" && (
           <Avatar
             name={currentUser.name}
             initials={currentUser.initials}
@@ -547,7 +560,7 @@ function VoteBadges({
       >
         <span>-</span>
         {qualification.votesNeutral}
-        {selectedVote === "neutral" && (
+        {userVote === "neutral" && (
           <Avatar
             name={currentUser.name}
             initials={currentUser.initials}
@@ -565,7 +578,7 @@ function VoteBadges({
       >
         <ThumbsDown {...withIconClass("text-scoring-low")} size={12} />
         {qualification.votesNo}
-        {selectedVote === "no" && (
+        {userVote === "no" && (
           <Avatar
             name={currentUser.name}
             initials={currentUser.initials}

@@ -35,6 +35,7 @@ import {
 } from "../../data/mockTenders";
 import type { VoteType } from "../../utils/applyVote";
 import { PanelDropdown, PanelDropdownOption } from "./PanelDropdown";
+import { PanelText } from "./PanelText";
 
 interface TenderSidePanelProps {
   tender: TenderPanelView;
@@ -125,8 +126,15 @@ export function TenderSidePanel({
     >
       <header className="flex shrink-0 items-start gap-xs">
         <div className="min-w-0 flex-1">
-          <h2 className="text-h3 break-words text-text-primary">{tender.name}</h2>
-          <p className="mt-3xs text-body text-text-secondary">{tender.location}</p>
+          <PanelText as="h2" className="text-h3 text-text-primary">
+            {tender.name}
+          </PanelText>
+          <PanelText
+            as="p"
+            className="mt-3xs text-body text-text-secondary"
+          >
+            {tender.location}
+          </PanelText>
         </div>
         <button
           type="button"
@@ -179,10 +187,10 @@ function OverviewSection({ tender }: { tender: TenderPanelView }) {
 
       <div className="grid grid-cols-2 gap-xs">
         <Field label="Buyer">
-          <p className="text-body text-text-primary">{tender.buyer}</p>
+          <PanelText className="text-body text-text-primary">{tender.buyer}</PanelText>
         </Field>
         <Field label="Volumen">
-          <p className="text-body text-text-primary">{tender.volumen}</p>
+          <PanelText className="text-body text-text-primary">{tender.volumen}</PanelText>
         </Field>
       </div>
     </section>
@@ -197,28 +205,38 @@ function ProjectDetailsSection({ tender }: { tender: TenderPanelView }) {
       <div className="flex flex-col gap-xs">
         <div className="grid grid-cols-2 gap-xs">
           <Field label="Leistungsart">
-            <p className="text-body text-text-primary">{tender.leistungsart}</p>
+            <PanelText className="text-body text-text-primary">
+              {tender.leistungsart}
+            </PanelText>
           </Field>
           <Field label="LP">
-            <p className="text-body text-text-primary">{tender.lp}</p>
+            <PanelText className="text-body text-text-primary">{tender.lp}</PanelText>
           </Field>
         </div>
 
         <div className="grid grid-cols-2 gap-xs">
           <Field label="Gebäudetyp">
-            <p className="text-body text-text-primary">{tender.gebaeudetyp}</p>
+            <PanelText className="text-body text-text-primary">
+              {tender.gebaeudetyp}
+            </PanelText>
           </Field>
           <Field label="Verfahrensart">
-            <p className="text-body text-text-primary">{tender.verfahrensart}</p>
+            <PanelText className="text-body text-text-primary">
+              {tender.verfahrensart}
+            </PanelText>
           </Field>
         </div>
 
         <div className="grid grid-cols-2 gap-xs">
           <Field label="Entfernung">
-            <p className="text-body text-text-primary">{tender.entfernung}</p>
+            <PanelText className="text-body text-text-primary">
+              {tender.entfernung}
+            </PanelText>
           </Field>
           <Field label="Upload-Datum">
-            <p className="text-body text-text-primary">{tender.uploadDate}</p>
+            <PanelText className="text-body text-text-primary">
+              {tender.uploadDate}
+            </PanelText>
           </Field>
         </div>
       </div>
@@ -392,7 +410,8 @@ function SidebarSection({
           <ScoreIcons
             score={qualification.relevanzScore}
             icon={Star}
-            filledClassName="fill-status-progress-text text-status-progress-text"
+            filledClassName="text-text-primary"
+            filledFillColor="var(--color-scoring-relevance)"
             emptyClassName="text-border-dark"
             onScoreChange={(score) => {
               const nextQualification = {
@@ -410,7 +429,7 @@ function SidebarSection({
           <ScoreIcons
             score={qualification.komplexitaetScore}
             icon={Wrench}
-            filledClassName="text-scoring-low"
+            filledClassName="fill-scoring-low text-scoring-low"
             emptyClassName="text-border-dark"
             onScoreChange={(score) => {
               const nextQualification = {
@@ -434,7 +453,7 @@ function ActivitySection({ tender }: { tender: TenderPanelView }) {
       <h3 className="text-eyebrow text-text-primary">Aktivität</h3>
 
       <div className="flex flex-col gap-xs">
-        <Field label="Updates">
+        <Field label="Aktualisierungen">
           <div className="rounded-[2px] border border-border-light p-3xs">
             {tender.updates.length > 0 ? (
               tender.updates.map((update, index) => (
@@ -445,9 +464,9 @@ function ActivitySection({ tender }: { tender: TenderPanelView }) {
                 />
               ))
             ) : (
-              <p className="px-3xs py-3xs text-table text-text-primary">
+              <PanelText className="px-3xs py-3xs text-table text-text-primary">
                 Unbekannt
-              </p>
+              </PanelText>
             )}
           </div>
         </Field>
@@ -459,7 +478,9 @@ function ActivitySection({ tender }: { tender: TenderPanelView }) {
                 <CommentItem key={`${comment.author.name}-${comment.timestamp}`} comment={comment} />
               ))
             ) : (
-              <p className="px-3xs text-table text-text-primary">Unbekannt</p>
+              <PanelText className="px-3xs text-table text-text-primary">
+                Unbekannt
+              </PanelText>
             )}
 
             <div className="flex items-center gap-3xs rounded-[2px] border border-border-light px-3xs py-4xs">
@@ -480,9 +501,9 @@ function ActivitySection({ tender }: { tender: TenderPanelView }) {
         <Field label="Zeitleiste">
           <div className="rounded-[2px] border border-border-light px-xs py-xs">
             <div className="flex gap-m">
-              <p className="max-w-[324px] flex-1 text-table text-text-primary">
+              <PanelText className="max-w-[324px] flex-1 text-table text-text-primary">
                 {tender.timelineDescription}
-              </p>
+              </PanelText>
               <Timeline events={tender.timelineEvents} />
             </div>
           </div>
@@ -504,8 +525,10 @@ function Field({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-4xs">
-      <span className="text-filter-label text-text-primary">{label}</span>
+    <div className="flex min-w-0 flex-col gap-4xs">
+      <span className="break-hyphenate text-filter-label text-text-primary">
+        {label}
+      </span>
       {children}
     </div>
   );
@@ -596,6 +619,7 @@ function ScoreIcons({
   score,
   icon: Icon,
   filledClassName,
+  filledFillColor,
   emptyClassName,
   onScoreChange,
   ariaLabel,
@@ -603,6 +627,7 @@ function ScoreIcons({
   score: number;
   icon: LucideIcon;
   filledClassName: string;
+  filledFillColor?: string;
   emptyClassName: string;
   onScoreChange: (score: number) => void;
   ariaLabel: string;
@@ -625,7 +650,7 @@ function ScoreIcons({
             <Icon
               {...withIconClass(isFilled ? filledClassName : emptyClassName)}
               size={16}
-              fill={Icon === Star && isFilled ? "currentColor" : "none"}
+              fill={isFilled ? (filledFillColor ?? "currentColor") : "none"}
             />
           </button>
         );
@@ -645,20 +670,21 @@ function UpdateItem({
     <div
       className={`px-4xs py-3xs ${highlighted ? "rounded-container bg-status-info-bg" : ""}`}
     >
-      <div className="flex flex-col gap-4xs">
-        <div className="flex flex-wrap items-center gap-3xs">
-          <Bell
-            {...withIconClass(
-              highlighted ? "text-status-info-text" : "text-text-disabled",
-            )}
-            size={16}
-          />
-          <span className="text-body text-text-primary">{update.title}</span>
+      <div className="flex gap-3xs">
+        <Bell
+          {...withIconClass(
+            highlighted ? "text-status-info-text" : "text-text-disabled",
+          )}
+          size={16}
+        />
+        <div className="flex min-w-0 flex-1 flex-col gap-4xs">
           <span className="text-small text-text-secondary">
             {update.timestamp}
           </span>
+          <PanelText className="text-table text-text-primary">
+            {update.description}
+          </PanelText>
         </div>
-        <p className="pl-s text-table text-text-primary">{update.description}</p>
       </div>
     </div>
   );
@@ -678,10 +704,14 @@ function CommentItem({
           color={comment.author.color}
           avatarUrl={comment.author.avatarUrl}
         />
-        <span className="text-body text-text-primary">{comment.author.name}</span>
+        <PanelText as="span" className="text-body text-text-primary">
+          {comment.author.name}
+        </PanelText>
         <span className="text-small text-text-secondary">{comment.timestamp}</span>
       </div>
-      <p className="pl-[28px] text-table text-text-primary">{comment.preview}</p>
+      <PanelText className="pl-[28px] text-table text-text-primary">
+        {comment.preview}
+      </PanelText>
     </div>
   );
 }
@@ -712,12 +742,15 @@ function Timeline({
               <div className="w-px flex-1 bg-border-light" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-4xs">
-              <span className="text-small leading-[1.2] text-text-secondary">
+              <PanelText
+                as="span"
+                className="text-small leading-[1.2] text-text-secondary"
+              >
                 {event.label}
-              </span>
-              <span className="text-table font-medium text-text-primary">
+              </PanelText>
+              <PanelText as="span" className="text-table font-medium text-text-primary">
                 {event.value}
-              </span>
+              </PanelText>
             </div>
           </div>
         );
@@ -743,9 +776,11 @@ function RequirementsPanel({
         {tabs.map((tab) => (
           <div
             key={tab.label}
-            className="flex items-center justify-center gap-3xs rounded-container bg-bg-light px-2xs py-2xs"
+            className="flex min-w-0 items-center justify-center gap-3xs rounded-container bg-bg-light px-2xs py-2xs"
           >
-            <span className="text-body text-text-primary">{tab.label}</span>
+            <PanelText as="span" className="text-body text-text-primary">
+              {tab.label}
+            </PanelText>
             <span className="inline-flex size-5 items-center justify-center rounded-full bg-bg-containers text-caption text-text-primary">
               {tab.count}
             </span>
@@ -757,9 +792,11 @@ function RequirementsPanel({
         {requirements.sections.map((section, index) => (
           <div key={section.label}>
             {index > 0 && <hr className="border-border-light" />}
-            <div className="flex items-center justify-between px-xs py-3xs">
-              <div className="flex items-center gap-3xs">
-                <span className="text-body text-text-primary">{section.label}</span>
+            <div className="flex min-w-0 items-center justify-between px-xs py-3xs">
+              <div className="flex min-w-0 items-center gap-3xs">
+                <PanelText as="span" className="text-body text-text-primary">
+                  {section.label}
+                </PanelText>
                 <span className="inline-flex size-5 items-center justify-center rounded-full bg-bg-light text-caption text-text-primary">
                   {section.count}
                 </span>

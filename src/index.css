@@ -38,6 +38,7 @@
   --color-scoring-high: #216e3a;
   --color-scoring-medium: #946200;
   --color-scoring-low: #b42318;
+  --color-scoring-relevance: #ffe8a5;
 
   --color-status-rejected-bg: #feeceb;
   --color-status-rejected-text: #b42318;
@@ -174,5 +175,16 @@
     font-weight: 600;
     line-height: 1.3;
     letter-spacing: 0.48px;
+  }
+
+  .break-hyphenate {
+    min-width: 0;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: manual;
+  }
+
+  .break-hyphenate-auto {
+    hyphens: auto;
   }
 }

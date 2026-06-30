@@ -30,7 +30,9 @@ export function StatusColumnHeader({
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
-  const menuStyle = useFixedDropdownStyle(isOpen, buttonRef, menuRef, "right");
+  const menuStyle = useFixedDropdownStyle(isOpen, buttonRef, menuRef, "right", {
+    capMaxHeight: false,
+  });
 
   useEffect(() => {
     if (!isOpen) {

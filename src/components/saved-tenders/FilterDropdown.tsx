@@ -14,16 +14,21 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { panelUsers } from "../../data/mockTenders";
 import type { TenderOwner } from "../../types/tender";
 import { Avatar } from "../ui/Avatar";
 import { withIconClass } from "../ui/iconProps";
 import {
+  DROPDOWN_GAP_PX,
+  DROPDOWN_Z_INDEX,
   getFixedDropdownMenuStyle,
   useFixedDropdownStyle,
 } from "./useFixedDropdownStyle";
+
+const OWNER_FILTER_ID = "owner";
+const SUBMENU_HOVER_DELAY_MS = 120;
 
 const filterOptions: Array<{
   id: string;
@@ -36,7 +41,7 @@ const filterOptions: Array<{
   { id: "buyer", icon: Briefcase, label: "Buyer" },
   { id: "service-type", icon: ListChecks, label: "Leistungsart" },
   { id: "building-type", icon: Building2, label: "Gebäudetyp" },
-  { id: "owner", icon: User, label: "Projekt Owner", hasSubmenu: true },
+  { id: OWNER_FILTER_ID, icon: User, label: "Projekt Owner", hasSubmenu: true },
   { id: "team", icon: Users, label: "Team" },
   { id: "procedure-type", icon: FileText, label: "Verfahrensart" },
   { id: "upload-date", icon: Upload, label: "Upload-Datum" },
@@ -51,10 +56,40 @@ interface FilterDropdownProps {
 export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openSubmenuId, setOpenSubmenuId] = useState<string | null>(null);
+  const [ownerSubmenuStyle, setOwnerSubmenuStyle] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
-  const menuStyle = useFixedDropdownStyle(isOpen, buttonRef, menuRef);
+  const ownerItemRef = useRef<HTMLDivElement>(null);
+  const ownerSubmenuRef = useRef<HTMLUListElement>(null);
+  const submenuHoverTimeoutRef = useRef<number | null>(null);
+  const menuStyle = useFixedDropdownStyle(isOpen, buttonRef, menuRef, "left", {
+    capMaxHeight: false,
+  });
+
+  const clearSubmenuHoverTimeout = useCallback(() => {
+    if (submenuHoverTimeoutRef.current !== null) {
+      window.clearTimeout(submenuHoverTimeoutRef.current);
+      submenuHoverTimeoutRef.current = null;
+    }
+  }, []);
+
+  const openOwnerSubmenu = useCallback(() => {
+    clearSubmenuHoverTimeout();
+    setOpenSubmenuId(OWNER_FILTER_ID);
+  }, [clearSubmenuHoverTimeout]);
+
+  const scheduleCloseOwnerSubmenu = useCallback(() => {
+    clearSubmenuHoverTimeout();
+    submenuHoverTimeoutRef.current = window.setTimeout(() => {
+      setOpenSubmenuId((current) =>
+        current === OWNER_FILTER_ID ? null : current,
+      );
+    }, SUBMENU_HOVER_DELAY_MS);
+  }, [clearSubmenuHoverTimeout]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -66,7 +101,8 @@ export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
       const target = event.target as Node;
       if (
         containerRef.current?.contains(target) ||
-        menuRef.current?.contains(target)
+        menuRef.current?.contains(target) ||
+        ownerSubmenuRef.current?.contains(target)
       ) {
         return;
       }
@@ -78,11 +114,83 @@ export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
+  useEffect(() => {
+    if (openSubmenuId !== OWNER_FILTER_ID || !ownerItemRef.current) {
+      setOwnerSubmenuStyle(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const rect = ownerItemRef.current?.getBoundingClientRect();
+      if (!rect) {
+        return;
+      }
+
+      setOwnerSubmenuStyle({
+        top: rect.top,
+        left: rect.right + DROPDOWN_GAP_PX,
+      });
+    };
+
+    updatePosition();
+    window.addEventListener("scroll", updatePosition, true);
+    window.addEventListener("resize", updatePosition);
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
+  }, [openSubmenuId, menuStyle]);
+
+  useEffect(() => {
+    return () => {
+      clearSubmenuHoverTimeout();
+    };
+  }, [clearSubmenuHoverTimeout]);
+
   const handleOwnerSelect = (owner: TenderOwner) => {
     onOwnerFilterSelect(owner);
     setIsOpen(false);
     setOpenSubmenuId(null);
   };
+
+  const ownerSubmenu =
+    isOpen && openSubmenuId === OWNER_FILTER_ID && ownerSubmenuStyle ? (
+      <ul
+        ref={ownerSubmenuRef}
+        role="listbox"
+        aria-label="Projekt Owner"
+        style={{
+          position: "fixed",
+          top: ownerSubmenuStyle.top,
+          left: ownerSubmenuStyle.left,
+          zIndex: DROPDOWN_Z_INDEX + 1,
+        }}
+        className="w-max rounded-[2px] border border-border-light bg-bg-containers py-4xs"
+        onMouseEnter={openOwnerSubmenu}
+        onMouseLeave={scheduleCloseOwnerSubmenu}
+      >
+        {panelUsers.map((owner) => (
+          <li key={owner.name} role="option">
+            <button
+              type="button"
+              onClick={() => handleOwnerSelect(owner)}
+              className="flex w-full items-center gap-4xs px-3xs py-4xs text-left hover:bg-bg-light"
+            >
+              <Avatar
+                name={owner.name}
+                initials={owner.initials}
+                color={owner.color}
+                avatarUrl={owner.avatarUrl}
+              />
+              <span className="whitespace-nowrap text-table text-text-primary">
+                {owner.name}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    ) : null;
 
   const menu =
     isOpen && menuStyle ? (
@@ -91,18 +199,15 @@ export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
         role="listbox"
         aria-label="Filter"
         style={getFixedDropdownMenuStyle(menuStyle)}
-        className="w-max overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
+        className="w-max overflow-visible rounded-[2px] border border-border-light bg-bg-containers py-4xs"
       >
         {filterOptions.map(({ id, icon: Icon, label, hasSubmenu }) =>
           hasSubmenu ? (
-            <li
-              key={id}
-              role="option"
-              className="relative"
-              onMouseEnter={() => setOpenSubmenuId(id)}
-              onMouseLeave={() => setOpenSubmenuId(null)}
-            >
+            <li key={id} role="option">
               <div
+                ref={id === OWNER_FILTER_ID ? ownerItemRef : undefined}
+                onMouseEnter={openOwnerSubmenu}
+                onMouseLeave={scheduleCloseOwnerSubmenu}
                 className={`flex w-full items-center justify-between gap-xs px-3xs py-4xs ${
                   openSubmenuId === id ? "bg-bg-light" : "hover:bg-bg-light"
                 }`}
@@ -115,36 +220,6 @@ export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
                 </span>
                 <ChevronRight {...withIconClass("shrink-0")} />
               </div>
-
-              {openSubmenuId === id && (
-                <div className="absolute left-full top-0 pl-4xs">
-                  <ul
-                    role="listbox"
-                    aria-label="Projekt Owner"
-                    className="w-max rounded-[2px] border border-border-light bg-bg-containers py-4xs"
-                  >
-                    {panelUsers.map((owner) => (
-                      <li key={owner.name} role="option">
-                        <button
-                          type="button"
-                          onClick={() => handleOwnerSelect(owner)}
-                          className="flex w-full items-center gap-4xs px-3xs py-4xs text-left hover:bg-bg-light"
-                        >
-                          <Avatar
-                            name={owner.name}
-                            initials={owner.initials}
-                            color={owner.color}
-                            avatarUrl={owner.avatarUrl}
-                          />
-                          <span className="whitespace-nowrap text-table text-text-primary">
-                            {owner.name}
-                          </span>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
             </li>
           ) : (
             <li key={id} role="option">
@@ -187,6 +262,7 @@ export function FilterDropdown({ onOwnerFilterSelect }: FilterDropdownProps) {
       </button>
 
       {menu && createPortal(menu, document.body)}
+      {ownerSubmenu && createPortal(ownerSubmenu, document.body)}
     </div>
   );
 }

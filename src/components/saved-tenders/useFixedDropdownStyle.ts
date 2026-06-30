@@ -8,6 +8,11 @@ export const DROPDOWN_MAX_HEIGHT_PX = 160;
 
 export type FixedDropdownAlign = "left" | "right";
 
+export interface FixedDropdownStyleOptions {
+  /** When false, only viewport space limits height (no 160px cap). */
+  capMaxHeight?: boolean;
+}
+
 interface FixedDropdownStyle {
   top: number;
   left: number;
@@ -21,6 +26,7 @@ export function useFixedDropdownStyle(
   anchorRef: RefObject<HTMLElement | null>,
   menuRef: RefObject<HTMLElement | null>,
   align: FixedDropdownAlign = "left",
+  { capMaxHeight = true }: FixedDropdownStyleOptions = {},
 ) {
   const [style, setStyle] = useState<FixedDropdownStyle | null>(null);
 
@@ -47,10 +53,10 @@ export function useFixedDropdownStyle(
       const spaceAbove = rect.top - DROPDOWN_GAP_PX;
       const openUpward = spaceBelow < menuHeight && spaceAbove > spaceBelow;
 
-      const maxHeight = Math.min(
-        DROPDOWN_MAX_HEIGHT_PX,
-        Math.max(openUpward ? spaceAbove : spaceBelow, 0),
-      );
+      const availableSpace = Math.max(openUpward ? spaceAbove : spaceBelow, 0);
+      const maxHeight = capMaxHeight
+        ? Math.min(DROPDOWN_MAX_HEIGHT_PX, availableSpace)
+        : availableSpace;
 
       const clampedHeight = Math.min(menuHeight, maxHeight || menuHeight);
 
@@ -112,7 +118,7 @@ export function useFixedDropdownStyle(
       window.removeEventListener("scroll", updatePosition, true);
       window.removeEventListener("resize", updatePosition);
     };
-  }, [isOpen, anchorRef, menuRef, align]);
+  }, [isOpen, anchorRef, menuRef, align, capMaxHeight]);
 
   return style;
 }

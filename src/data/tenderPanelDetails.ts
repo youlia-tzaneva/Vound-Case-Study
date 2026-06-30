@@ -5,6 +5,7 @@ import type {
   TenderListItem,
   TenderPanelUpdate,
   TenderPanelView,
+  TenderQualification,
   UrgentTender,
 } from "../types/tender";
 import { deriveUploadDate } from "../utils/deadline";
@@ -320,6 +321,21 @@ function getOwner(tender: TenderListItem) {
   return null;
 }
 
+function getQualification(tender: TenderListItem): TenderQualification {
+  if ("qualification" in tender) {
+    return tender.qualification;
+  }
+
+  const seed = hashSeed(tender.id);
+  return {
+    votesYes: 1 + (seed % 4),
+    votesNeutral: seed % 2,
+    votesNo: seed % 3,
+    relevanzScore: 2 + (seed % 4),
+    komplexitaetScore: 2 + (seed % 4),
+  };
+}
+
 export function toTenderPanelView(tender: TenderListItem): TenderPanelView {
   const generated =
     tender.id === "1"
@@ -335,7 +351,7 @@ export function toTenderPanelView(tender: TenderListItem): TenderPanelView {
     urgencyLabel: tender.urgencyLabel,
     status: tender.status,
     owner: getOwner(tender),
-    qualification: tender.qualification,
+    qualification: getQualification(tender),
     ...generated,
   };
 }

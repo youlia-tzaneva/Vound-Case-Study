@@ -3,6 +3,7 @@ import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { withIconClass } from "../ui/iconProps";
 import {
+  DROPDOWN_Z_INDEX,
   getFixedDropdownMenuStyle,
   useFixedDropdownStyle,
 } from "./useFixedDropdownStyle";
@@ -14,6 +15,7 @@ interface PanelDropdownProps {
   ariaLabel: string;
   trigger: ReactNode;
   children: ReactNode;
+  menuZIndex?: number;
   onTriggerMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
@@ -24,6 +26,7 @@ export function PanelDropdown({
   ariaLabel,
   trigger,
   children,
+  menuZIndex = DROPDOWN_Z_INDEX,
   onTriggerMouseDown,
 }: PanelDropdownProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,18 +55,27 @@ export function PanelDropdown({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  const menu =
-    isOpen && menuStyle ? (
-      <ul
-        ref={menuRef}
-        role="listbox"
-        aria-label={ariaLabel}
-        style={getFixedDropdownMenuStyle(menuStyle)}
-        className="w-max overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
-      >
-        {children}
-      </ul>
-    ) : null;
+  const menu = isOpen ? (
+    <ul
+      ref={menuRef}
+      role="listbox"
+      aria-label={ariaLabel}
+      style={
+        menuStyle
+          ? getFixedDropdownMenuStyle(menuStyle, menuZIndex)
+          : {
+              position: "fixed",
+              visibility: "hidden",
+              top: 0,
+              left: 0,
+              zIndex: menuZIndex,
+            }
+      }
+      className="w-max overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
+    >
+      {children}
+    </ul>
+  ) : null;
 
   return (
     <div ref={containerRef} className="relative">

@@ -241,6 +241,25 @@ export function SavedTendersPage() {
     ]);
   };
 
+  const handleWorkspaceColumnsChange = useCallback((columns: TableColumnId[]) => {
+    setViews((current) => {
+      const active = current.find((view) => view.isActive);
+
+      if (!active?.isCustom) {
+        return current;
+      }
+
+      return current.map((view) =>
+        view.id === active.id
+          ? {
+              ...view,
+              columns: normalizeCustomWorkspaceColumns(columns),
+            }
+          : view,
+      );
+    });
+  }, []);
+
   const handleDeleteWorkspace = useCallback((id: string) => {
     setIsPanelOpen(false);
     setViews((current) => {
@@ -515,6 +534,10 @@ export function SavedTendersPage() {
               onOwnerFilterSelect={setOwnerFilter}
               sortBy={sortBy}
               onSortSelect={setSortBy}
+              columns={isCustomView ? customColumns : undefined}
+              onColumnsChange={
+                isCustomView ? handleWorkspaceColumnsChange : undefined
+              }
             />
             <ActiveFilterTags
               ownerFilter={ownerFilter}

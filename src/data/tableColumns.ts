@@ -60,6 +60,34 @@ export function normalizeCustomWorkspaceColumns(
   return ["name", ...rest];
 }
 
+export const immovableCustomWorkspaceColumnIds = new Set<TableColumnId>([
+  "name",
+]);
+
+export function toggleCustomWorkspaceColumn(
+  columns: TableColumnId[],
+  columnId: TableColumnId,
+  selected: boolean,
+): TableColumnId[] {
+  if (!selected && immovableCustomWorkspaceColumnIds.has(columnId)) {
+    return normalizeCustomWorkspaceColumns(columns);
+  }
+
+  const normalized = normalizeCustomWorkspaceColumns(columns);
+
+  if (selected) {
+    if (normalized.includes(columnId)) {
+      return normalized;
+    }
+
+    return normalizeCustomWorkspaceColumns([...normalized, columnId]);
+  }
+
+  return normalizeCustomWorkspaceColumns(
+    normalized.filter((column) => column !== columnId),
+  );
+}
+
 /** @deprecated Use normalizeCustomWorkspaceColumns for custom workspaces. */
 export function ensureSelectColumnFirst(columns: TableColumnId[]): TableColumnId[] {
   return normalizeCustomWorkspaceColumns(columns);

@@ -9,7 +9,9 @@ export function DeadlineText({ deadline }: DeadlineTextProps) {
     <div className="flex flex-col gap-4xs">
       <span className="whitespace-nowrap text-table text-text-primary">{date}</span>
       {time ? (
-        <span className="whitespace-nowrap text-table text-text-secondary">{time}</span>
+        <span className="whitespace-nowrap text-table text-text-secondary">
+          {time} Uhr
+        </span>
       ) : null}
     </div>
   );

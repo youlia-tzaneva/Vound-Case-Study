@@ -10,7 +10,9 @@ import type { TenderOwner } from "../../types/tender";
 import { withIconClass } from "../ui/iconProps";
 import { FilterDropdown } from "./FilterDropdown";
 import { SortDropdown } from "./SortDropdown";
+import { ColumnsDropdown } from "./ColumnsDropdown";
 import type { TenderSortOption } from "../../utils/sortTenders";
+import type { TableColumnId } from "../../data/tableColumns";
 
 interface SavedTendersToolbarProps {
   searchQuery: string;
@@ -18,6 +20,8 @@ interface SavedTendersToolbarProps {
   onOwnerFilterSelect: (owner: TenderOwner) => void;
   sortBy: TenderSortOption | null;
   onSortSelect: (sort: TenderSortOption) => void;
+  columns?: TableColumnId[];
+  onColumnsChange?: (columns: TableColumnId[]) => void;
 }
 
 export function SavedTendersToolbar({
@@ -26,6 +30,8 @@ export function SavedTendersToolbar({
   onOwnerFilterSelect,
   sortBy,
   onSortSelect,
+  columns,
+  onColumnsChange,
 }: SavedTendersToolbarProps) {
   return (
     <div className="flex w-full items-center gap-m rounded-container border border-border-light bg-bg-containers px-xs py-3xs">
@@ -45,13 +51,17 @@ export function SavedTendersToolbar({
 
       <SortDropdown sortBy={sortBy} onSortSelect={onSortSelect} />
 
-      <button
-        type="button"
-        className="inline-flex shrink-0 items-center gap-3xs text-filter-label text-text-primary hover:text-text-accent"
-      >
-        <SlidersHorizontal {...withIconClass()} />
-        Spalten
-      </button>
+      {columns && onColumnsChange ? (
+        <ColumnsDropdown columns={columns} onColumnsChange={onColumnsChange} />
+      ) : (
+        <button
+          type="button"
+          className="inline-flex shrink-0 items-center gap-3xs text-filter-label text-text-primary hover:text-text-accent"
+        >
+          <SlidersHorizontal {...withIconClass()} />
+          Spalten
+        </button>
+      )}
 
       <div
         className="flex shrink-0 items-stretch gap-4xs self-stretch"

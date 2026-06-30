@@ -51,7 +51,7 @@ export function CustomTendersTable({
 
   return (
     <div className={tableWrapperClass}>
-      <table className={`${tableClass} min-w-[900px]`}>
+      <table className={`${tableClass} w-max min-w-full`}>
         <thead>
           <tr>
             <th scope="col" className={`${thClass} ${selectColumnClass}`}>

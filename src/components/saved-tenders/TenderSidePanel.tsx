@@ -35,6 +35,7 @@ import {
 } from "../../data/mockTenders";
 import type { VoteType } from "../../utils/applyVote";
 import { PanelDropdown, PanelDropdownOption } from "./PanelDropdown";
+import { SIDE_PANEL_DROPDOWN_Z_INDEX } from "./useFixedDropdownStyle";
 import { PanelText } from "./PanelText";
 
 interface TenderSidePanelProps {
@@ -295,6 +296,7 @@ function SidebarSection({
             isOpen={openDropdown === "owner"}
             onToggle={() => toggleDropdown("owner")}
             onClose={() => setOpenDropdown(null)}
+            menuZIndex={SIDE_PANEL_DROPDOWN_Z_INDEX}
             ariaLabel="Projekt Owner auswählen"
             trigger={
               owner ? (
@@ -343,6 +345,7 @@ function SidebarSection({
             isOpen={openDropdown === "team"}
             onToggle={() => toggleDropdown("team")}
             onClose={() => setOpenDropdown(null)}
+            menuZIndex={SIDE_PANEL_DROPDOWN_Z_INDEX}
             ariaLabel="Team auswählen"
             trigger={
               <span className="min-w-0 flex-1 truncate text-body text-text-primary">
@@ -371,6 +374,7 @@ function SidebarSection({
             isOpen={openDropdown === "partner"}
             onToggle={() => toggleDropdown("partner")}
             onClose={() => setOpenDropdown(null)}
+            menuZIndex={SIDE_PANEL_DROPDOWN_Z_INDEX}
             ariaLabel="Partner auswählen"
             trigger={
               <span className="min-w-0 flex-1 truncate text-body text-text-primary">

@@ -2,6 +2,8 @@ import { useEffect, useState, type CSSProperties, type RefObject } from "react";
 
 export const DROPDOWN_GAP_PX = 4;
 export const DROPDOWN_Z_INDEX = 30;
+/** Must sit above TenderSidePanelDrawer (z-50). */
+export const SIDE_PANEL_DROPDOWN_Z_INDEX = 60;
 export const DROPDOWN_MAX_HEIGHT_PX = 160;
 
 export type FixedDropdownAlign = "left" | "right";
@@ -117,6 +119,7 @@ export function useFixedDropdownStyle(
 
 export function getFixedDropdownMenuStyle(
   style: FixedDropdownStyle,
+  zIndex: number = DROPDOWN_Z_INDEX,
 ): CSSProperties {
   return {
     position: "fixed",
@@ -125,6 +128,6 @@ export function getFixedDropdownMenuStyle(
     minWidth: style.minWidth,
     maxHeight: style.maxHeight,
     transform: style.transform,
-    zIndex: DROPDOWN_Z_INDEX,
+    zIndex,
   };
 }

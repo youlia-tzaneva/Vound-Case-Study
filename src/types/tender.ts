@@ -60,6 +60,7 @@ export interface Tender {
   status: TenderStatus;
   decision?: TenderDecision | null;
   owner: TenderOwner;
+  team?: string;
   qualification: TenderQualification;
   update: TenderUpdate | null;
   comment: TenderComment | null;

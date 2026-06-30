@@ -48,6 +48,15 @@ export const teamStatusColumnHeaderClass = `${teamStatusColumnWidthClass} ${stat
 export const teamUpdatesColumnClass =
   "w-[136px] max-w-[136px] overflow-hidden break-words";
 
+export const myProjectsTeamColumnWidthClass =
+  "w-[158.72px] max-w-[158.72px] break-words";
+
+export const myProjectsTeamColumnClass =
+  `${myProjectsTeamColumnWidthClass} overflow-hidden`;
+
+export const myProjectsTeamDropdownCellClass =
+  `${myProjectsTeamColumnWidthClass} ${dropdownCellClass}`;
+
 export const teamProjectOwnerColumnWidthClass =
   "w-[158.93px] max-w-[158.93px] break-words";
 

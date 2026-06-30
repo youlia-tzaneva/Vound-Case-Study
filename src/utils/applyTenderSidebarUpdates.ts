@@ -15,8 +15,12 @@ function applySidebarUpdates<
     next.owner = updates.owner as T["owner"];
   }
 
-  if (updates.team !== undefined && "team" in next) {
-    next.team = updates.team;
+  if (updates.team !== undefined) {
+    if ("team" in next) {
+      next.team = updates.team;
+    } else if ("comment" in next) {
+      (next as Tender).team = updates.team;
+    }
   }
 
   if (updates.qualification !== undefined && "qualification" in next) {

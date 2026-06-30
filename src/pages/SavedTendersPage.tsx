@@ -95,6 +95,7 @@ export function SavedTendersPage() {
   const isUrgentView = activeViewId === "attention";
   const isTeamView = activeViewId === "team";
   const isLeadershipView = activeViewId === "leadership";
+  const isMyView = activeViewId === "my";
   const isCustomView = Boolean(activeView?.isCustom && activeView.columns);
   const customColumns = normalizeCustomWorkspaceColumns(activeView?.columns ?? []);
 
@@ -624,8 +625,10 @@ export function SavedTendersPage() {
             <TendersTable
               tenders={filteredTenders}
               activeTenderId={isPanelOpen ? panelTender?.id ?? null : null}
+              showTeamColumn={isMyView}
               onTenderOpen={handleTenderOpen}
               onOwnerChange={handleOwnerChange}
+              onTeamChange={handleTeamChange}
               onDecisionChange={handleDecisionChange}
               onVote={handleVote}
               {...tableSelectionProps}

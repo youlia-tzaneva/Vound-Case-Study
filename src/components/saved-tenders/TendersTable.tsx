@@ -7,19 +7,35 @@ import { TextLink } from "../ui/TextLink";
 import type { Tender, TenderOwner, TenderDecision } from "../../types/tender";
 import type { VoteType } from "../../utils/applyVote";
 import { statusLabels } from "../../data/mockTenders";
+import { getTenderTeam } from "../../data/tenderPanelDetails";
 import { DecisionCell } from "./DecisionCell";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
 import { QualificationCell } from "./QualificationCell";
+import { TeamCell } from "./TeamCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, deadlineColumnClass, dropdownCellClass, selectColumnClass, statusColumnHeaderClass, statusColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import {
+  getTdClass,
+  deadlineColumnClass,
+  dropdownCellClass,
+  myProjectsTeamColumnClass,
+  myProjectsTeamDropdownCellClass,
+  selectColumnClass,
+  statusColumnHeaderClass,
+  statusColumnClass,
+  tableClass,
+  tableWrapperClass,
+  thClass,
+} from "./tableStyles";
 
 interface TendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
   activeTenderId?: string | null;
+  showTeamColumn?: boolean;
   onTenderOpen: (tender: Tender) => void;
   onOwnerChange: (tenderId: string, owner: TenderOwner) => void;
+  onTeamChange?: (tenderId: string, team: string) => void;
   onDecisionChange: (tenderId: string, decision: TenderDecision) => void;
   onVote?: (
     tenderId: string,
@@ -31,8 +47,10 @@ interface TendersTableProps extends TableSelectionProps, StatusFilterProps {
 export function TendersTable({
   tenders,
   activeTenderId = null,
+  showTeamColumn = false,
   onTenderOpen,
   onOwnerChange,
+  onTeamChange,
   onDecisionChange,
   onVote,
   selectedStatuses,
@@ -60,8 +78,13 @@ export function TendersTable({
                 onStatusToggle={onStatusToggle}
               />
             </th>
-            <th scope="col" className={`${thClass} w-[168px]`}>
-              Projekt Owner
+            <th
+              scope="col"
+              className={`${thClass} ${
+                showTeamColumn ? myProjectsTeamColumnClass : "w-[168px]"
+              }`}
+            >
+              {showTeamColumn ? "Team" : "Projekt Owner"}
             </th>
             <th scope="col" className={`${thClass} w-[173px]`}>
               Qualifikation
@@ -89,6 +112,12 @@ export function TendersTable({
               }
               onOpen={() => onTenderOpen(tender)}
               onOwnerChange={(owner) => onOwnerChange(tender.id, owner)}
+              onTeamChange={
+                onTeamChange
+                  ? (team) => onTeamChange(tender.id, team)
+                  : undefined
+              }
+              showTeamColumn={showTeamColumn}
               onDecisionChange={(decision) =>
                 onDecisionChange(tender.id, decision)
               }
@@ -110,6 +139,8 @@ function TenderRow({
   onSelectedChange,
   onOpen,
   onOwnerChange,
+  onTeamChange,
+  showTeamColumn,
   onDecisionChange,
   onVote,
 }: {
@@ -119,6 +150,8 @@ function TenderRow({
   onSelectedChange: (selected: boolean) => void;
   onOpen: () => void;
   onOwnerChange: (owner: TenderOwner) => void;
+  onTeamChange?: (team: string) => void;
+  showTeamColumn: boolean;
   onDecisionChange: (decision: TenderDecision) => void;
   onVote?: (type: VoteType) => void;
 }) {
@@ -161,11 +194,22 @@ function TenderRow({
           {statusLabels[tender.status]}
         </Badge>
       </td>
-      <td className={cellClass(dropdownCellClass)}>
-        <ProjectOwnerCell
-          owner={tender.owner}
-          onOwnerChange={onOwnerChange}
-        />
+      <td
+        className={cellClass(
+          showTeamColumn ? myProjectsTeamDropdownCellClass : dropdownCellClass,
+        )}
+      >
+        {showTeamColumn ? (
+          <TeamCell
+            team={getTenderTeam(tender)}
+            onTeamChange={onTeamChange ?? (() => undefined)}
+          />
+        ) : (
+          <ProjectOwnerCell
+            owner={tender.owner}
+            onOwnerChange={onOwnerChange}
+          />
+        )}
       </td>
       <td className={cellClass()}>
         <QualificationCell

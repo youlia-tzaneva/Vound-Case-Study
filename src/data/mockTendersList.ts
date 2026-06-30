@@ -11,6 +11,7 @@ export const mockTenders: Tender[] = [
     urgencyLabel: "überfällig",
     status: "vorgemerkt",
     owner: { name: "John Smith", initials: "J", color: "#a472e4" },
+    team: "Hochbau",
     qualification: {
       votesYes: 1,
       votesNeutral: 0,
@@ -33,6 +34,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
+    team: "Hochbau",
     qualification: {
       votesYes: 4,
       votesNeutral: 0,
@@ -51,6 +53,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "vorgemerkt",
     owner: { name: "Johan Stein", initials: "J", color: "#4f84ee" },
+    team: "Hochbau",
     qualification: {
       votesYes: 3,
       votesNeutral: 1,
@@ -73,6 +76,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-abgegeben",
     owner: { name: "Marie Volker", initials: "M", color: "#24922f" },
+    team: "Verkehr",
     qualification: {
       votesYes: 2,
       votesNeutral: 0,
@@ -95,6 +99,7 @@ export const mockTenders: Tender[] = [
     urgencyLabel: "Noch 5 tage",
     status: "gewonnen",
     owner: { name: "Max Waltz", initials: "M", color: "#e91418" },
+    team: "Hochbau",
     qualification: {
       votesYes: 0,
       votesNeutral: 0,
@@ -117,6 +122,7 @@ export const mockTenders: Tender[] = [
     urgencyLabel: "überfällig",
     status: "teilnahmeantrag-in-bearbeitung",
     owner: { name: "John Smith", initials: "J", color: "#a472e4" },
+    team: "Hochbau",
     qualification: {
       votesYes: 1,
       votesNeutral: 4,
@@ -139,6 +145,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-in-bearbeitung",
     owner: { name: "John Smith", initials: "J", color: "#a472e4" },
+    team: "Generalplanung",
     qualification: {
       votesYes: 1,
       votesNeutral: 0,
@@ -161,6 +168,7 @@ export const mockTenders: Tender[] = [
     urgencyLabel: "Noch 5 Tage",
     status: "vorgemerkt",
     owner: currentUser,
+    team: "Hochbau",
     qualification: {
       votesYes: 3,
       votesNeutral: 1,
@@ -186,6 +194,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
+    team: "Hochbau",
     qualification: {
       votesYes: 5,
       votesNeutral: 0,
@@ -204,6 +213,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-abgegeben",
     owner: currentUser,
+    team: "Generalplanung",
     qualification: {
       votesYes: 4,
       votesNeutral: 2,
@@ -229,6 +239,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "gewonnen",
     owner: currentUser,
+    team: "Tiefbau",
     qualification: {
       votesYes: 6,
       votesNeutral: 0,
@@ -251,6 +262,7 @@ export const mockTenders: Tender[] = [
     urgencyLabel: "überfällig",
     status: "vorgemerkt",
     owner: currentUser,
+    team: "Hochbau",
     qualification: {
       votesYes: 2,
       votesNeutral: 2,
@@ -273,6 +285,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
+    team: "Hochbau",
     qualification: {
       votesYes: 3,
       votesNeutral: 1,
@@ -298,6 +311,7 @@ export const mockTenders: Tender[] = [
     urgency: null,
     status: "teilnahmeantrag-in-bearbeitung",
     owner: currentUser,
+    team: "Hochbau",
     qualification: {
       votesYes: 2,
       votesNeutral: 3,

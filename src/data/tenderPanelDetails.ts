@@ -183,6 +183,15 @@ function deriveTeam(tender: TenderListItem, seed: number): string {
   return pickFrom(["Hochbau", "Tiefbau", "Verkehr", "Generalplanung"], seed);
 }
 
+/** Same team resolution used by the side panel (toTenderPanelView). */
+export function getTenderTeam(tender: TenderListItem): string {
+  if (tender.id === "1") {
+    return exemplarPanelDetails.team;
+  }
+
+  return deriveTeam(tender, hashSeed(tender.id));
+}
+
 function buildUpdates(
   tender: Tender | UrgentTender | TeamTender,
   seed: number,

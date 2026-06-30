@@ -1,6 +1,11 @@
 import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { withIconClass } from "../ui/iconProps";
+import {
+  getFixedDropdownMenuStyle,
+  useFixedDropdownStyle,
+} from "./useFixedDropdownStyle";
 
 interface PanelDropdownProps {
   isOpen: boolean;
@@ -9,6 +14,7 @@ interface PanelDropdownProps {
   ariaLabel: string;
   trigger: ReactNode;
   children: ReactNode;
+  onTriggerMouseDown?: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export function PanelDropdown({
@@ -18,8 +24,12 @@ export function PanelDropdown({
   ariaLabel,
   trigger,
   children,
+  onTriggerMouseDown,
 }: PanelDropdownProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLUListElement>(null);
+  const menuStyle = useFixedDropdownStyle(isOpen, buttonRef, menuRef);
 
   useEffect(() => {
     if (!isOpen) {
@@ -27,25 +37,43 @@ export function PanelDropdown({
     }
 
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
+        containerRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
       ) {
-        onClose();
+        return;
       }
+
+      onClose();
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
+  const menu =
+    isOpen && menuStyle ? (
+      <ul
+        ref={menuRef}
+        role="listbox"
+        aria-label={ariaLabel}
+        style={getFixedDropdownMenuStyle(menuStyle)}
+        className="w-max overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
+      >
+        {children}
+      </ul>
+    ) : null;
+
   return (
     <div ref={containerRef} className="relative">
       <button
+        ref={buttonRef}
         type="button"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-label={ariaLabel}
+        onMouseDown={onTriggerMouseDown}
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-4xs rounded-[2px] border border-border-light bg-bg-containers px-3xs py-4xs text-left"
       >
@@ -55,15 +83,7 @@ export function PanelDropdown({
         />
       </button>
 
-      {isOpen && (
-        <ul
-          role="listbox"
-          aria-label={ariaLabel}
-          className="absolute left-0 right-0 top-full z-10 mt-4xs max-h-[160px] overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
-        >
-          {children}
-        </ul>
-      )}
+      {menu && createPortal(menu, document.body)}
     </div>
   );
 }

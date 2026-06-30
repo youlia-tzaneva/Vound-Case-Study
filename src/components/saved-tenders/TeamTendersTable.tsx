@@ -11,7 +11,7 @@ import { TeamCell } from "./TeamCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, deadlineColumnClass, selectColumnClass, teamDecisionCellClass, teamDecisionColumnClass, teamNameColumnClass, teamProjectOwnerColumnClass, teamStatusColumnClass, teamTeamColumnClass, teamUpdatesColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, selectColumnClass, teamDecisionCellClass, teamDecisionColumnClass, teamNameColumnClass, teamProjectOwnerColumnClass, teamProjectOwnerDropdownCellClass, teamStatusColumnClass, teamStatusColumnHeaderClass, teamTeamColumnClass, teamTeamDropdownCellClass, teamUpdatesColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface TeamTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: TeamTender[];
@@ -51,7 +51,7 @@ export function TeamTendersTable({
             <th scope="col" className={`${thClass} w-[88px]`}>
               LP
             </th>
-            <th scope="col" className={`${thClass} ${teamStatusColumnClass}`}>
+            <th scope="col" className={`${thClass} ${teamStatusColumnHeaderClass}`}>
               <StatusColumnHeader
                 selectedStatuses={selectedStatuses}
                 onStatusToggle={onStatusToggle}
@@ -169,13 +169,13 @@ function TeamTenderRow({
       <td className={cellClass(teamUpdatesColumnClass)}>
         <UpdatesCell update={tender.update} />
       </td>
-      <td className={cellClass(teamProjectOwnerColumnClass)}>
+      <td className={cellClass(teamProjectOwnerDropdownCellClass)}>
         <ProjectOwnerCell
           owner={tender.owner}
           onOwnerChange={onOwnerChange}
         />
       </td>
-      <td className={cellClass(teamTeamColumnClass)}>
+      <td className={cellClass(teamTeamDropdownCellClass)}>
         <TeamCell team={tender.team} onTeamChange={onTeamChange} />
       </td>
       <td className={cellClass(`${teamDecisionCellClass} border-r-0`)}>

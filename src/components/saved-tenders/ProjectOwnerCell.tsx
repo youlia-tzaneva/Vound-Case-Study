@@ -55,7 +55,7 @@ export function ProjectOwnerCell({
               color={user.color}
               avatarUrl={user.avatarUrl}
             />
-            <span className="min-w-0 flex-1 truncate text-table text-text-primary">
+            <span className="min-w-0 flex-1 whitespace-nowrap text-table text-text-primary">
               {user.name}
             </span>
           </PanelDropdownOption>

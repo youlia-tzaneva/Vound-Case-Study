@@ -17,7 +17,7 @@ import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, deadlineColumnClass, selectColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, dropdownCellClass, selectColumnClass, statusFilterHeaderClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface UrgentTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: UrgentTender[];
@@ -61,7 +61,7 @@ export function UrgentTendersTable({
             <th scope="col" className={`${thClass} ${deadlineColumnClass}`}>
               Abgabefrist
             </th>
-            <th scope="col" className={`${thClass} w-[176px]`}>
+            <th scope="col" className={`${thClass} w-[176px] ${statusFilterHeaderClass}`}>
               <StatusColumnHeader
                 selectedStatuses={selectedStatuses}
                 onStatusToggle={onStatusToggle}
@@ -168,7 +168,7 @@ function UrgentTenderRow({
       <td className={cellClass()}>
         <UpdatesCell update={tender.update} />
       </td>
-      <td className={cellClass()}>
+      <td className={cellClass(dropdownCellClass)}>
         <ProjectOwnerCell
           owner={tender.owner}
           onOwnerChange={onOwnerChange}
@@ -180,7 +180,7 @@ function UrgentTenderRow({
           onVote={(type) => onVote?.(type)}
         />
       </td>
-      <td className={cellClass("border-r-0")}>
+      <td className={cellClass(`${dropdownCellClass} border-r-0`)}>
         <DecisionCell
           decision={tender.decision}
           status={tender.status}

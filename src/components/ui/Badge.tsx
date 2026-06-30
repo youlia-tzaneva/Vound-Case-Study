@@ -5,6 +5,7 @@ type BadgeVariant =
   | "status-progress"
   | "status-submitted"
   | "status-success"
+  | "status-inactive"
   | "status-rejected"
   | "urgency-overdue"
   | "urgency-deadline";
@@ -28,6 +29,10 @@ const variantStyles: Record<
   "status-success": {
     bg: "bg-status-success-bg",
     text: "text-status-success-text",
+  },
+  "status-inactive": {
+    bg: "bg-status-inactive-bg",
+    text: "text-status-inactive-text",
   },
   "status-rejected": {
     bg: "bg-status-rejected-bg",
@@ -81,7 +86,7 @@ export function statusToVariant(
 ): BadgeVariant {
   const map = {
     vorgemerkt: "status-info",
-    aussortiert: "status-rejected",
+    aussortiert: "status-inactive",
     "teilnahmeantrag-in-bearbeitung": "status-progress",
     "teilnahmeantrag-abgegeben": "status-submitted",
     "angebot-in-bearbeitung": "status-progress",

@@ -2,12 +2,11 @@ import { Badge, statusToVariant, urgencyToVariant } from "../ui/Badge";
 import { DeadlineUrgencyText } from "./DeadlineUrgencyText";
 import { DeadlineText } from "./DeadlineText";
 import { Avatar } from "../ui/Avatar";
-import { Checkbox } from "../ui/Checkbox";
 import { TextLink } from "../ui/TextLink";
 import type { Tender, TenderOwner, TenderDecision } from "../../types/tender";
 import type { VoteType } from "../../utils/applyVote";
 import type { TableColumnId } from "../../data/tableColumns";
-import { allTableColumns, ensureSelectColumnFirst } from "../../data/tableColumns";
+import { configurableTableColumns, normalizeCustomWorkspaceColumns } from "../../data/tableColumns";
 import { statusLabels } from "../../data/mockTenders";
 import { DecisionCell } from "./DecisionCell";
 import { ProjectOwnerCell } from "./ProjectOwnerCell";
@@ -15,7 +14,7 @@ import { QualificationCell } from "./QualificationCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, deadlineColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, dropdownCellClass, statusFilterHeaderClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface CustomTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: Tender[];
@@ -44,8 +43,10 @@ export function CustomTendersTable({
   isRowSelected,
   onRowSelectedChange,
 }: CustomTendersTableProps) {
-  const orderedColumns = ensureSelectColumnFirst(columns);
-  const columnLabels = new Map(allTableColumns.map((column) => [column.id, column.label]));
+  const orderedColumns = normalizeCustomWorkspaceColumns(columns);
+  const columnLabels = new Map(
+    configurableTableColumns.map((column) => [column.id, column.label]),
+  );
 
   return (
     <div className={tableWrapperClass}>
@@ -56,11 +57,9 @@ export function CustomTendersTable({
               <th
                 key={columnId}
                 scope="col"
-                className={`${thClass} ${columnId === "deadline" ? deadlineColumnClass : ""} ${index === orderedColumns.length - 1 ? "border-r-0" : ""}`}
+                className={`${thClass} ${columnId === "deadline" ? deadlineColumnClass : ""} ${columnId === "status" ? statusFilterHeaderClass : ""} ${index === orderedColumns.length - 1 ? "border-r-0" : ""}`}
               >
-                {columnId === "select" ? (
-                  <span className="sr-only">{columnLabels.get(columnId)}</span>
-                ) : columnId === "status" ? (
+                {columnId === "status" ? (
                   <StatusColumnHeader
                     selectedStatuses={selectedStatuses}
                     onStatusToggle={onStatusToggle}
@@ -131,15 +130,18 @@ function CustomTenderRow({
           className={cellClass(
             [
               columnId === "deadline" ? deadlineColumnClass : undefined,
+              columnId === "owner" ||
+              columnId === "team" ||
+              columnId === "decision"
+                ? dropdownCellClass
+                : undefined,
               index === columns.length - 1 ? "border-r-0" : undefined,
             ]
               .filter(Boolean)
               .join(" ") || undefined,
           )}
           onClick={
-            columnId === "select" ||
-            columnId === "owner" ||
-            columnId === "decision"
+            columnId === "owner" || columnId === "decision"
               ? (event) => event.stopPropagation()
               : undefined
           }
@@ -177,14 +179,6 @@ function ColumnCell({
   onVote?: (type: VoteType) => void;
 }) {
   switch (columnId) {
-    case "select":
-      return (
-        <Checkbox
-          checked={isSelected}
-          onChange={onSelectedChange}
-          label={`${tender.name} auswählen`}
-        />
-      );
     case "name":
       return (
         <div className="flex flex-col gap-4xs break-words">

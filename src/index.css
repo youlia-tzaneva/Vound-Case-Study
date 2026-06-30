@@ -29,6 +29,8 @@
   --color-status-submitted-text: #0d5e5a;
   --color-status-success-bg: #eaf7ee;
   --color-status-success-text: #216e3a;
+  --color-status-inactive-bg: #f2f4f6;
+  --color-status-inactive-text: #6b7280;
 
   --color-urgency-overdue-bg: #feeceb;
   --color-urgency-overdue-text: #b42318;

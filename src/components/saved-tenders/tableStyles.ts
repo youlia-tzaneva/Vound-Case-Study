@@ -27,23 +27,46 @@ export const selectColumnClass = "w-0 whitespace-nowrap overflow-hidden";
 export const teamNameColumnClass =
   "w-[189px] max-w-[189px] overflow-hidden break-words";
 
-export const statusColumnClass =
-  "w-[176px] max-w-[176px] overflow-hidden break-words";
+export const statusColumnWidthClass = "w-[176px] max-w-[176px] break-words";
 
-export const teamStatusColumnClass =
-  "w-[160px] max-w-[160px] overflow-hidden break-words";
+export const statusColumnClass = `${statusColumnWidthClass} overflow-hidden`;
+
+export const dropdownCellClass =
+  "overflow-visible has-[button[aria-expanded=true]]:relative has-[button[aria-expanded=true]]:z-20";
+
+export const statusFilterHeaderClass =
+  "overflow-visible has-[button[aria-expanded=true]]:relative has-[button[aria-expanded=true]]:z-20";
+
+export const statusColumnHeaderClass = `${statusColumnWidthClass} ${statusFilterHeaderClass}`;
+
+export const teamStatusColumnWidthClass = "w-[160px] max-w-[160px] break-words";
+
+export const teamStatusColumnClass = `${teamStatusColumnWidthClass} overflow-hidden`;
+
+export const teamStatusColumnHeaderClass = `${teamStatusColumnWidthClass} ${statusFilterHeaderClass}`;
 
 export const teamUpdatesColumnClass =
   "w-[136px] max-w-[136px] overflow-hidden break-words";
 
+export const teamProjectOwnerColumnWidthClass =
+  "w-[158.93px] max-w-[158.93px] break-words";
+
 export const teamProjectOwnerColumnClass =
-  "w-[158.93px] max-w-[158.93px] overflow-hidden break-words";
+  `${teamProjectOwnerColumnWidthClass} overflow-hidden`;
+
+export const teamProjectOwnerDropdownCellClass =
+  `${teamProjectOwnerColumnWidthClass} ${dropdownCellClass}`;
+
+export const teamTeamColumnWidthClass =
+  "w-[122px] max-w-[122px] break-words";
 
 export const teamTeamColumnClass =
-  "w-[122px] max-w-[122px] overflow-hidden break-words";
+  `${teamTeamColumnWidthClass} overflow-hidden`;
+
+export const teamTeamDropdownCellClass =
+  `${teamTeamColumnWidthClass} ${dropdownCellClass}`;
 
 export const teamDecisionColumnClass =
   "w-[125.77px] max-w-[125.77px]";
 
-export const teamDecisionCellClass =
-  `${teamDecisionColumnClass} overflow-visible has-[button[aria-expanded=true]]:relative has-[button[aria-expanded=true]]:z-20`;
+export const teamDecisionCellClass = `${teamDecisionColumnClass} ${dropdownCellClass}`;

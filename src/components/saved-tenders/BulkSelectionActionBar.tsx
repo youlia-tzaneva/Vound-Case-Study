@@ -1,10 +1,16 @@
 import { ChevronDown, Square, SquareCheck, SquareMinus } from "lucide-react";
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { panelTeams, panelUsers } from "../../data/mockTenders";
 import type { TenderOwner } from "../../types/tender";
 import { Avatar } from "../ui/Avatar";
 import { Checkbox } from "../ui/Checkbox";
 import { withIconClass } from "../ui/iconProps";
+import { PanelDropdown, PanelDropdownOption } from "./PanelDropdown";
+import {
+  getFixedDropdownMenuStyle,
+  useFixedDropdownStyle,
+} from "./useFixedDropdownStyle";
 
 interface BulkSelectionActionBarProps {
   allSelected: boolean;
@@ -34,32 +40,38 @@ export function BulkSelectionActionBar({
   const [teamMenuOpen, setTeamMenuOpen] = useState(false);
   const [markReadChecked, setMarkReadChecked] = useState(false);
   const selectionRef = useRef<HTMLDivElement>(null);
-  const ownerRef = useRef<HTMLDivElement>(null);
-  const teamRef = useRef<HTMLDivElement>(null);
+  const selectionButtonRef = useRef<HTMLButtonElement>(null);
+  const selectionMenuRef = useRef<HTMLUListElement>(null);
+  const selectionMenuStyle = useFixedDropdownStyle(
+    selectionMenuOpen,
+    selectionButtonRef,
+    selectionMenuRef,
+  );
 
   useEffect(() => {
     setMarkReadChecked(false);
   }, [selectedIdsKey]);
 
   useEffect(() => {
+    if (!selectionMenuOpen) {
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
       if (
-        selectionRef.current &&
-        !selectionRef.current.contains(event.target as Node)
+        selectionRef.current?.contains(target) ||
+        selectionMenuRef.current?.contains(target)
       ) {
-        setSelectionMenuOpen(false);
+        return;
       }
-      if (ownerRef.current && !ownerRef.current.contains(event.target as Node)) {
-        setOwnerMenuOpen(false);
-      }
-      if (teamRef.current && !teamRef.current.contains(event.target as Node)) {
-        setTeamMenuOpen(false);
-      }
+
+      setSelectionMenuOpen(false);
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [selectionMenuOpen]);
 
   const SelectionIcon = allSelected ? SquareCheck : someSelected ? SquareMinus : Square;
 
@@ -67,6 +79,46 @@ export function BulkSelectionActionBar({
     setMarkReadChecked(checked);
     onMarkUpdatesReadChange(checked);
   };
+
+  const preventFocusSteal = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const selectionMenu =
+    selectionMenuOpen && selectionMenuStyle ? (
+      <ul
+        ref={selectionMenuRef}
+        role="listbox"
+        aria-label="Auswahloptionen"
+        style={getFixedDropdownMenuStyle(selectionMenuStyle)}
+        className="w-max overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
+      >
+        <li role="option">
+          <button
+            type="button"
+            onClick={() => {
+              onSelectAll();
+              setSelectionMenuOpen(false);
+            }}
+            className="flex w-full px-3xs py-4xs text-left text-table text-text-primary hover:bg-bg-light"
+          >
+            All
+          </button>
+        </li>
+        <li role="option">
+          <button
+            type="button"
+            onClick={() => {
+              onSelectNone();
+              setSelectionMenuOpen(false);
+            }}
+            className="flex w-full px-3xs py-4xs text-left text-table text-text-primary hover:bg-bg-light"
+          >
+            None
+          </button>
+        </li>
+      </ul>
+    ) : null;
 
   return (
     <div className="flex items-center gap-l px-xs">
@@ -80,7 +132,7 @@ export function BulkSelectionActionBar({
                 ? "Alle Zeilen auswählen"
                 : "Alle Zeilen auswählen"
           }
-          onMouseDown={(event) => event.preventDefault()}
+          onMouseDown={preventFocusSteal}
           onClick={onToggleAll}
           className="inline-flex cursor-pointer items-center"
         >
@@ -92,11 +144,12 @@ export function BulkSelectionActionBar({
         </button>
 
         <button
+          ref={selectionButtonRef}
           type="button"
           aria-expanded={selectionMenuOpen}
           aria-haspopup="listbox"
           aria-label="Auswahloptionen"
-          onMouseDown={(event) => event.preventDefault()}
+          onMouseDown={preventFocusSteal}
           onClick={() => setSelectionMenuOpen((current) => !current)}
           className="inline-flex cursor-pointer items-center"
         >
@@ -107,60 +160,34 @@ export function BulkSelectionActionBar({
           />
         </button>
 
-        {selectionMenuOpen && (
-          <ul
-            role="listbox"
-            aria-label="Auswahloptionen"
-            className="absolute left-0 top-full z-10 mt-4xs min-w-[120px] rounded-[2px] border border-border-light bg-bg-containers py-4xs"
-          >
-            <li role="option">
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectAll();
-                  setSelectionMenuOpen(false);
-                }}
-                className="flex w-full px-3xs py-4xs text-left text-table text-text-primary hover:bg-bg-light"
-              >
-                All
-              </button>
-            </li>
-            <li role="option">
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectNone();
-                  setSelectionMenuOpen(false);
-                }}
-                className="flex w-full px-3xs py-4xs text-left text-table text-text-primary hover:bg-bg-light"
-              >
-                None
-              </button>
-            </li>
-          </ul>
-        )}
+        {selectionMenu && createPortal(selectionMenu, document.body)}
       </div>
 
       <div className="flex items-center gap-3xs">
         <span className="text-filter-label font-light text-text-primary">
           Projekt Owner:
         </span>
-        <BulkActionDropdown
-          containerRef={ownerRef}
-          isOpen={ownerMenuOpen}
-          onToggle={() => setOwnerMenuOpen((current) => !current)}
-          ariaLabel="Projekt Owner für ausgewählte Zeilen"
-          placeholder="Wählen"
-        >
-          {panelUsers.map((user) => (
-            <li key={user.name} role="option">
-              <button
-                type="button"
-                onClick={() => {
+        <div className="w-[165px]">
+          <PanelDropdown
+            isOpen={ownerMenuOpen}
+            onToggle={() => setOwnerMenuOpen((current) => !current)}
+            onClose={() => setOwnerMenuOpen(false)}
+            onTriggerMouseDown={preventFocusSteal}
+            ariaLabel="Projekt Owner für ausgewählte Zeilen"
+            trigger={
+              <span className="truncate text-table text-text-primary">
+                Wählen
+              </span>
+            }
+          >
+            {panelUsers.map((user) => (
+              <PanelDropdownOption
+                key={user.name}
+                isSelected={false}
+                onSelect={() => {
                   onOwnerChange(user);
                   setOwnerMenuOpen(false);
                 }}
-                className="flex w-full items-center gap-4xs px-3xs py-4xs text-left hover:bg-bg-light"
               >
                 <Avatar
                   name={user.name}
@@ -168,41 +195,48 @@ export function BulkSelectionActionBar({
                   color={user.color}
                   avatarUrl={user.avatarUrl}
                 />
-                <span className="min-w-0 flex-1 truncate text-table text-text-primary">
+                <span className="min-w-0 flex-1 whitespace-nowrap text-table text-text-primary">
                   {user.name}
                 </span>
-              </button>
-            </li>
-          ))}
-        </BulkActionDropdown>
+              </PanelDropdownOption>
+            ))}
+          </PanelDropdown>
+        </div>
       </div>
 
       <div className="flex items-center gap-3xs">
         <span className="text-filter-label font-light text-text-primary">
           Team:
         </span>
-        <BulkActionDropdown
-          containerRef={teamRef}
-          isOpen={teamMenuOpen}
-          onToggle={() => setTeamMenuOpen((current) => !current)}
-          ariaLabel="Team für ausgewählte Zeilen"
-          placeholder="Wählen"
-        >
-          {panelTeams.map((team) => (
-            <li key={team} role="option">
-              <button
-                type="button"
-                onClick={() => {
+        <div className="w-[165px]">
+          <PanelDropdown
+            isOpen={teamMenuOpen}
+            onToggle={() => setTeamMenuOpen((current) => !current)}
+            onClose={() => setTeamMenuOpen(false)}
+            onTriggerMouseDown={preventFocusSteal}
+            ariaLabel="Team für ausgewählte Zeilen"
+            trigger={
+              <span className="truncate text-table text-text-primary">
+                Wählen
+              </span>
+            }
+          >
+            {panelTeams.map((team) => (
+              <PanelDropdownOption
+                key={team}
+                isSelected={false}
+                onSelect={() => {
                   onTeamChange(team);
                   setTeamMenuOpen(false);
                 }}
-                className="flex w-full px-3xs py-4xs text-left text-table text-text-primary hover:bg-bg-light"
               >
-                {team}
-              </button>
-            </li>
-          ))}
-        </BulkActionDropdown>
+                <span className="whitespace-nowrap text-table text-text-primary">
+                  {team}
+                </span>
+              </PanelDropdownOption>
+            ))}
+          </PanelDropdown>
+        </div>
       </div>
 
       <div className="inline-flex items-center gap-3xs">
@@ -215,53 +249,6 @@ export function BulkSelectionActionBar({
           Aktualisierungen als gelesen markieren
         </span>
       </div>
-    </div>
-  );
-}
-
-function BulkActionDropdown({
-  containerRef,
-  isOpen,
-  onToggle,
-  ariaLabel,
-  placeholder,
-  children,
-}: {
-  containerRef: RefObject<HTMLDivElement | null>;
-  isOpen: boolean;
-  onToggle: () => void;
-  ariaLabel: string;
-  placeholder: string;
-  children: ReactNode;
-}) {
-  return (
-    <div ref={containerRef} className="relative w-[165px]">
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        aria-haspopup="listbox"
-        aria-label={ariaLabel}
-        onMouseDown={(event) => event.preventDefault()}
-        onClick={onToggle}
-        className="flex w-full items-center justify-between gap-4xs rounded-[2px] border border-border-light bg-bg-containers px-3xs py-4xs text-left"
-      >
-        <span className="min-w-0 flex-1 truncate text-table text-text-primary">
-          {placeholder}
-        </span>
-        <ChevronDown
-          {...withIconClass(`shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`)}
-        />
-      </button>
-
-      {isOpen && (
-        <ul
-          role="listbox"
-          aria-label={ariaLabel}
-          className="absolute left-0 right-0 top-full z-10 mt-4xs max-h-[160px] overflow-y-auto rounded-[2px] border border-border-light bg-bg-containers py-4xs"
-        >
-          {children}
-        </ul>
-      )}
     </div>
   );
 }

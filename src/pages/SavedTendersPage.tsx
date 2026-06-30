@@ -29,7 +29,7 @@ import type {
   TenderStatus,
   TenderDecision,
 } from "../types/tender";
-import { ensureSelectColumnFirst, type TableColumnId } from "../data/tableColumns";
+import { normalizeCustomWorkspaceColumns, type TableColumnId } from "../data/tableColumns";
 import {
   createDefaultStatusFilter,
   matchesStatusFilter,
@@ -96,7 +96,7 @@ export function SavedTendersPage() {
   const isTeamView = activeViewId === "team";
   const isLeadershipView = activeViewId === "leadership";
   const isCustomView = Boolean(activeView?.isCustom && activeView.columns);
-  const customColumns = ensureSelectColumnFirst(activeView?.columns ?? []);
+  const customColumns = normalizeCustomWorkspaceColumns(activeView?.columns ?? []);
 
   const filteredTenders = sortTenderList(
     filterTendersByView(tenders, activeViewId)
@@ -236,7 +236,7 @@ export function SavedTendersPage() {
         label,
         isActive: true,
         isCustom: true,
-        columns: ensureSelectColumnFirst(columns),
+        columns: normalizeCustomWorkspaceColumns(columns),
       },
     ]);
   };

@@ -12,7 +12,7 @@ import { TeamCell } from "./TeamCell";
 import type { TableSelectionProps } from "./SelectableTableShell";
 import type { StatusFilterProps } from "./StatusColumnHeader";
 import { StatusColumnHeader } from "./StatusColumnHeader";
-import { getTdClass, deadlineColumnClass, selectColumnClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
+import { getTdClass, deadlineColumnClass, dropdownCellClass, selectColumnClass, statusFilterHeaderClass, tableClass, tableWrapperClass, thClass } from "./tableStyles";
 
 interface LeadershipTendersTableProps extends TableSelectionProps, StatusFilterProps {
   tenders: LeadershipTender[];
@@ -52,7 +52,7 @@ export function LeadershipTendersTable({
             <th scope="col" className={`${thClass} min-w-[198px]`}>
               Name
             </th>
-            <th scope="col" className={`${thClass} w-[176px]`}>
+            <th scope="col" className={`${thClass} w-[176px] ${statusFilterHeaderClass}`}>
               <StatusColumnHeader
                 selectedStatuses={selectedStatuses}
                 onStatusToggle={onStatusToggle}
@@ -173,16 +173,16 @@ function LeadershipTenderRow({
           onVote={(type) => onVote?.(type)}
         />
       </td>
-      <td className={cellClass()}>
+      <td className={cellClass(dropdownCellClass)}>
         <ProjectOwnerCell
           owner={tender.owner}
           onOwnerChange={onOwnerChange}
         />
       </td>
-      <td className={cellClass()}>
+      <td className={cellClass(dropdownCellClass)}>
         <TeamCell team={tender.team} onTeamChange={onTeamChange} />
       </td>
-      <td className={cellClass("border-r-0")}>
+      <td className={cellClass(`${dropdownCellClass} border-r-0`)}>
         <DecisionCell
           decision={tender.decision}
           status={tender.status}

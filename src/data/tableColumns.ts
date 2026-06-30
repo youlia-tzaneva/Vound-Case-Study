@@ -36,12 +36,31 @@ export const allTableColumns: TableColumnDefinition[] = [
   { id: "decision", label: "Entscheidung" },
 ];
 
+export const configurableTableColumns = allTableColumns.filter(
+  (column) => column.id !== "select",
+);
+
+export const configurableTableColumnOrder = configurableTableColumns.map(
+  (column) => column.id,
+);
+
 export const defaultTableColumnOrder = allTableColumns.map((column) => column.id);
 
-export function ensureSelectColumnFirst(columns: TableColumnId[]): TableColumnId[] {
-  const rest = columns.filter(
-    (column) => column !== "select" && column !== "name" && column !== "decision",
-  );
+export function normalizeCustomWorkspaceColumns(
+  columns: TableColumnId[],
+): TableColumnId[] {
+  const withoutSelect = columns.filter((column) => column !== "select");
+  const nameIndex = withoutSelect.indexOf("name");
 
-  return ["select", "name", ...rest, "decision"];
+  if (nameIndex === -1) {
+    return withoutSelect;
+  }
+
+  const rest = withoutSelect.filter((column) => column !== "name");
+  return ["name", ...rest];
+}
+
+/** @deprecated Use normalizeCustomWorkspaceColumns for custom workspaces. */
+export function ensureSelectColumnFirst(columns: TableColumnId[]): TableColumnId[] {
+  return normalizeCustomWorkspaceColumns(columns);
 }

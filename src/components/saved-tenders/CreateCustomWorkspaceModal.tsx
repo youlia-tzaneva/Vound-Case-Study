@@ -1,9 +1,9 @@
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
-  allTableColumns,
-  defaultTableColumnOrder,
-  ensureSelectColumnFirst,
+  configurableTableColumnOrder,
+  configurableTableColumns,
+  normalizeCustomWorkspaceColumns,
   type TableColumnId,
 } from "../../data/tableColumns";
 import { Button } from "../ui/Button";
@@ -23,35 +23,38 @@ interface CreateCustomWorkspaceModalProps {
   onCreate: (workspace: { label: string; columns: TableColumnId[] }) => void;
 }
 
+const configurableColumnOrder = configurableTableColumnOrder;
+
 function createInitialColumns(): ColumnSelection[] {
-  return pinRequiredColumnsFirst(
-    defaultTableColumnOrder.map((id) => {
-      const column = allTableColumns.find((entry) => entry.id === id);
+  return pinNameColumnFirst(
+    configurableColumnOrder.map((id) => {
+      const column = configurableTableColumns.find((entry) => entry.id === id);
 
       return {
         id,
         label: column?.label ?? id,
-        selected: id === "select" || id === "name" || id === "decision",
+        selected: id === "name",
       };
     }),
   );
 }
 
-function pinRequiredColumnsFirst(columns: ColumnSelection[]): ColumnSelection[] {
+function pinNameColumnFirst(columns: ColumnSelection[]): ColumnSelection[] {
   const nameColumn = columns.find((column) => column.id === "name");
-  const selectColumn = columns.find((column) => column.id === "select");
-  const rest = columns.filter(
-    (column) => column.id !== "name" && column.id !== "select",
-  );
+  const rest = columns.filter((column) => column.id !== "name");
 
-  return [
-    ...(nameColumn ? [nameColumn] : []),
-    ...(selectColumn ? [selectColumn] : []),
-    ...rest,
-  ];
+  return [...(nameColumn ? [nameColumn] : []), ...rest];
 }
 
-const immovableColumnIds = new Set<TableColumnId>(["select", "name", "decision"]);
+const immovableColumnIds = new Set<TableColumnId>(["name"]);
+
+function findLastMovableSelectedIndex(columns: ColumnSelection[]): number {
+  return columns.reduce(
+    (lastIndex, column, index) =>
+      column.selected && !immovableColumnIds.has(column.id) ? index : lastIndex,
+    -1,
+  );
+}
 
 export function CreateCustomWorkspaceModal({
   isOpen,
@@ -61,14 +64,21 @@ export function CreateCustomWorkspaceModal({
   const [title, setTitle] = useState("");
   const [columns, setColumns] = useState<ColumnSelection[]>(createInitialColumns);
 
+  useEffect(() => {
+    if (isOpen) {
+      setTitle("");
+      setColumns(createInitialColumns());
+    }
+  }, [isOpen]);
+
+  const visibleColumns = columns.filter((column) => column.id !== "select");
+
   const selectedCount = columns.filter((column) => column.selected).length;
   const canCreate = title.trim().length > 0 && selectedCount >= 6;
   const firstMovableSelectedIndex = columns.findIndex(
     (column) => column.selected && !immovableColumnIds.has(column.id),
   );
-  const lastMovableSelectedIndex = columns.findLastIndex(
-    (column) => column.selected && !immovableColumnIds.has(column.id),
-  );
+  const lastMovableSelectedIndex = findLastMovableSelectedIndex(columns);
 
   const resetForm = () => {
     setTitle("");
@@ -87,7 +97,7 @@ export function CreateCustomWorkspaceModal({
 
     onCreate({
       label: title.trim(),
-      columns: ensureSelectColumnFirst(
+      columns: normalizeCustomWorkspaceColumns(
         columns.filter((column) => column.selected).map((column) => column.id),
       ),
     });
@@ -114,7 +124,7 @@ export function CreateCustomWorkspaceModal({
       const checked = rest.filter((entry) => entry.selected);
       const unchecked = rest.filter((entry) => !entry.selected);
 
-      return pinRequiredColumnsFirst([...checked, column, ...unchecked]);
+      return pinNameColumnFirst([...checked, column, ...unchecked]);
     });
   };
 
@@ -135,7 +145,7 @@ export function CreateCustomWorkspaceModal({
 
       const next = [...current];
       [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
-      return pinRequiredColumnsFirst(next);
+      return pinNameColumnFirst(next);
     });
   };
 
@@ -159,6 +169,7 @@ export function CreateCustomWorkspaceModal({
         <label className="flex flex-col gap-4xs">
           <span className="text-filter-label text-text-primary">
             Arbeitsbereich-Titel
+            <span aria-hidden="true">*</span>
           </span>
           <input
             type="text"
@@ -171,14 +182,20 @@ export function CreateCustomWorkspaceModal({
 
         <div className="flex flex-col gap-3xs">
           <div className="flex items-center justify-between gap-xs">
-            <span className="text-filter-label text-text-primary">Spalten</span>
+            <span className="text-filter-label text-text-primary">
+              Spalten
+              <span aria-hidden="true">*</span>
+            </span>
             <span className="text-caption text-text-secondary">
               {selectedCount} ausgewählt (mindestens 6)
             </span>
           </div>
 
           <ul className="flex flex-col rounded-container border border-border-light">
-            {columns.map((column, index) => (
+            {visibleColumns.map((column) => {
+              const index = columns.findIndex((entry) => entry.id === column.id);
+
+              return (
               <li
                 key={column.id}
                 className="flex items-center justify-between gap-xs border-b border-border-light px-xs py-3xs last:border-b-0"
@@ -225,7 +242,8 @@ export function CreateCustomWorkspaceModal({
                   </div>
                 )}
               </li>
-            ))}
+              );
+            })}
           </ul>
         </div>
       </div>
